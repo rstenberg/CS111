@@ -1,0 +1,87 @@
+Class moving to WGYoung CS 24
+
+Office Hours	(4532JJ Boelter):
+M 10 -11
+W 13:30 - 14:30
+
+Exams:
+Midterm - 5th Week
+Open notes/book
+
+Textbook:
+(AD) Operating Systems: Three Easy Pieces (OSIEP) (2016) by Andrea Arpaci-Dusseau
+(SK) Principles of Computer Systems Design (2009) by Jerome H. Saltzer and M. Frans Kaashoek
+
+Prep for class 2:
+	AD: 1-2 36
+	SK: 1, 2-2.3
+	Interface Stability by Mark Kampe
+
+----------------------- Class 1 (1/9) ------------------------
+
+"We don't offer a ready-made programme, but an entire operating system."
+	- Marina Weisland (The Economist 2013-01-105 p.19)
+
+Other OS in the news
+	1. Alexa. Amazon's Operating System personal assistant cloud-based O.S. creates framework for smart devices
+	2. Crouton on Chromebook <- Ubuntu in a browser tab
+	3. Red Star OS - North Korean OS
+		- Version 3.0
+		- Mac OS like interface
+		- Watermark all files
+		- Attempts to prevent modifications to OS
+
+"System" - defined
+	1. An organized or connected group of objects
+	2. A set of principles, etc., a scheme, method
+	3. A set of interconnected components that has a specified behavior observed at the interface with its enbironments
+
+		Environment
+	-----Interface-----
+	|  	  System  	  |
+	-----Interface-----
+		Environment
+
+Interfaces:
+	1. Interfaces is the boundary between system and interface
+	2. Interface is a MAJOR limiting factor on an OS
+	3. System can only be utilized to the extent of the interface
+
+"Operating System" (important terms in curly brackets - {important})
+	1. Sofware designed to {control} the {hardware of a specific data processing system} in order to allow users and application programs to make use of it
+	2. Master {control} program in a computer
+	3. System software that {manages} computer hardware and software {resources} and provides common services for compiler programs
+
+Operating System
+	1. Give users the power to control hardware of specific data processing system
+	2. Tightly coupled to hardware
+
+Prolems within computer systems
+	1) Incommensurate scaling: not everything scales at the same rate
+		Diseconomies of scale
+			Ex: star network - all inputs are connected to all other networks, exponential growth
+			Can cause breakage as you grow
+		Economies of scale
+			Ex: pin factory - much more efficient for one person to buy one long piece of wire, and fashion all 10,000 pins at once
+			Can cause wasting (over production)
+	2) Emergent properties - properties of the system that arise as you scale
+		Qualitatively different, often unanticipated
+		Ex: Tacoma Narrows - largest bridge ever built, hadn't thought about resonant frequency due to wind
+		Ex: UCLA Wifi - student dorms at UCLA used to download/send illegal content
+	3) Propogation of effects (butterfly effect)
+		Happens to often in OS
+		Ex: SJIS encoding - Microsoft used 2 bytes to represent each character
+			- First bite was a '1' to signify SJIS encoding
+			- Left 2^15 character arrangements
+			- SJIS encoding leaked into file directory system (ascii based)
+			- If '\' byte was found within a 2-byte representation of a japanese character, it was read as a file separator instead of part of japanese character
+	4) Tradeoffs
+		Waterbed effect - pushing down on one side of bed moves another part up
+		Fixing one thing may affect other things and make the system as a while more complicated
+		Ex: time-space balancing
+	5) Complexity
+		Moore's Law: Need for # transisotr's on a computer increases logarithmically
+		Kryder's Law: Disk Drive Capacity increases exponentially
+		Computer's are not getting faster (cannot keep up with size of disk drive)
+
+----------------------- Class 2 (1/11) ------------------------
