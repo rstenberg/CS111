@@ -85,3 +85,168 @@ Prolems within computer systems
 		Computer's are not getting faster (cannot keep up with size of disk drive)
 
 ----------------------- Class 2 (1/11) ------------------------
+
+Interface Evolution - (i.e. internet browsers)
+	Changing the interface can be messy because every program must be changed to handle the interface change
+
+	Options attempting to allow remote access to files:
+		1) fd = open("file/path", O_RDONLY,);		// makes a system call to open a read-only file and return a descriptor for it
+			// Original method which does not provide remote access
+		2) fd = open("google.com", "file", O_RDONLY);
+			// Problem: function will have difficulty distinguishing 2 argument open from 3 argument open at runtime (won't work)
+		3) fd = open("file/path", O_RDONLY, O_REMOTE);
+			// Problem: will require interface to be changed drastically, which means changing source code of each application to accomodate (will work, but a lot of work)
+		4) open("code.com:file", O_RDONLY);
+			// ':' used to signify remote_host:file
+			// ':' steals a possible character from filenames - ':' (not ideal)
+		5) putenv("FILESERVER=code.com")
+			fd = open("file", O_RDONLY);
+			FILESERVER=code.com cat f2
+			// Problem: Changing environment doesn't allow for multiple parameters
+		6) fd = open("file\0code.com", O_RDONLY);
+			// '\0' used to signify separation of file\0remote_host
+			// Problem: operating system can't tell the difference between original open call and this list of parameters (won't work)
+		7) fd = open("code.com/file", O_RDONLY);
+			// Problem: directories often have '.' in their name so "code.com" could be a local directory name
+		8) fd = open("/u/class/cs111/file", O_RDONLY);
+			// "/u/class/cs11" means go look on the remote file system
+			// Uses a VERY specific string of "directory" to dictate a remote file system
+			// Used on SEASNET server to access remote file systems
+			// Table created on SEASNET server to reserve this path name for a remote server
+
+Sample app - no OS:
+	Paranoid professor - 10,000 word limit file
+	Desktop computer not connected to the internet or the wall power (battery powered)
+	Intel core i3-4160 (3 MiB L3 cache 3.6 Ghz)
+	Power switch turns on and the monitor tells you how many words are in the file
+	Words match [A-Za-z]+ regex
+	File is an array of bytes (ASCII) stored on the disk drive
+
+	Priorities in order
+	1) Security
+	2) Speed
+
+	Questions we need answered:
+		- Where is the file located?
+			Answer: sector 1,000,000
+		- How do we access the file?
+
+	Process:
+	1) Turn computer on
+	2) Program runs
+		- Count words that match [A-Za-z]+ regex expression
+		- Increment word counter when hitting non-repeating a character not in expression
+		- Display word count
+
+	Disk Drives
+		- Rotating magnetic device
+		- Separated into sections
+		- Closed off from air to prevent dust
+		- Disk drive is never touched in fear of scratching
+		- To access: controller places read-write head on disk and waits for disk to spin to location that desired data is located
+		- Bits of data are arranged in concentric, circular paths called tracks
+		- Each track is broken up into smaller areas called sectors (512 bytes per sector)
+		- Can send commands or data from CPU to controller
+		- History:
+			Western Digital
+				Integrated Device Electronics (IDE)
+				Disk controller: Added a controller that was separate from CPU in 1986
+					- Attached to disk drive (ATA = AT Attachment, modernly called PATA = Paralel ATA)
+					- Now each controller was tailored to its disk drive and people writing the OS didn't have to handle the controller as well
+					- Has a small cache
+					- CPU -> 16-bit bus --------------> (controller) -> disk drive
+			Modern disk drive implementation
+				SATA (Serial ATA)
+					Parallel synchronization kills performance
+					Hot plugging: can unplug disk drive while drive and CPU are running without causing a fire
+					CPU ----- 1-bit-wire -----> controller -> disk drive
+
+	Boostrapping
+		- x86 components important to booting:
+			1) Physical RAM
+				Two main parts:
+					a) Real DRAM (real memory)
+					b) ROM (Read only memory) 
+						- Location on RAM is hardwired into hardware (0xffff0)
+						- Contents survive a power outage
+						- Stored in EEPROM (Electronically Erasable Programmable Read-Only Memory)
+							Set by the manufacturer
+							Normally:
+								i) 		Tests system
+								ii) 	Walk through bus looking for devices
+								iii) 	Finds a bootable device
+								iv) 	Read device's first sector (512 bytes) into RAM
+										- memory location 0x7c00 hardwired into the BIOS
+										- memory location 0x7c00 to 0x7dff is modified (512 bytes)
+								v)		Jump 0x7c00
+						Master Boot Record (MBR) - 512 Bytes (sector 0)
+							[||||||||||||  64  |2]
+							final 2 byte sector
+								- located at 0x55 and 0xAA 0xAA55 (little endian)
+								- Boot Signature
+							64 bytes: describes an area of disk
+								- Contains start sector on disk
+								- Size (# sectors)
+								- Type (1 byte descriptor of partition, i.e. linux file system, swap partition, microsoft operator)
+								- Bootable flag (specifies whether or not it is bootable)
+							486 Bytes:
+								- x86 code
+								- Will be read into memory and executed
+						Volume Boot Record (VBR)
+							- Using BIOS -> MBR -> VBR = chain loading
+							- Runs program called Grand Unified Bootloader (GRUB)
+								- Linux Kernal
+							- 1 sector of bootable partition
+
+
+	BIOS
+		Job:
+			1) Get first sector into RAM
+			2) Start running it
+
+	Overview:
+		BIOS -> MBR -> VBR -> execute word count code
+
+	Solution to problem above:
+		1) BIOS loads in MBR
+		2) Jump to 0x7c00 (1st 446-bytes of MBR) and execute Boot Loader source code
+		3) This source code will send word count program to RAM to execute
+
+	Boot loader source code
+		// At location 0x7c00 run the following code
+		// read-write 20 sectors
+		// first-argument: sector number
+		// second argument: memory address
+		// copy data out of disk sector to memory
+
+		// read_ide_sector will read 446 MBR code
+		void read_ide_sector(int s, int a)	{
+			//PIO
+			
+			// **************** inb ******************
+			// inb is a machine instruction on x86
+			// Grabs byte off bus from status register at location 0x147 (
+			// Returns current status of disk controller
+			// If top two bits of status are 0x40 then it is ready
+			// **************** inb ******************
+			while((inb(0x147) & 0xc0) != 0x40)
+				continue;
+
+			// **************** outb ******************
+			outb(0x1f2, 1);					// Setup disk controller to operator on 1 sector w/ next command
+			outb(0x1f3, s & 0xff);			// 
+			outb(0x1f4, (s >> 8) & 0xff);
+			outb(0x1f5, (s >> 16) & 0xff);
+			outb(0x1f6, (s >> 24) & 0xff);
+			outb(0x1f7, 0x20); 				// Read sector
+			// **************** outb ******************
+
+			// **************** insl ******************
+			insl(0x1f0, a, 512 / 4)
+		}
+
+		for (i=1; i< 20, i++)	{
+			read_ide_sector(i, 0x10000 + (i-1)+512)
+		}
+
+
