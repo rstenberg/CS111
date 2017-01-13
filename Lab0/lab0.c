@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <signal.h>
 
 void printUsage()	{
 	fprintf(stderr, "%s\n", "lab0: usage: ./lab0 [--input=<filename>] [--output=<filename>] [--segfault] [--catch]");
@@ -98,7 +99,7 @@ int main(int argc, char *argv[])	{
 		if (read_status)	{
 			write(1, &cur_char, 1);
 		}	else	{
-			exit(2);
+			exit(0);
 		}
 	}
 	

@@ -1,0 +1,15 @@
+Name: Ryan Stenberg
+UID: 304-410-501
+Proffessor: Eggert
+TA: Bu
+
+lab0.c:
+The lab0.c fiile holds the c source code for the main program. The program reads from stdin and writes the text to stdout. Once compiled into an executable, lab0 can be executed with four optional arguments. The getopt library is used to parse the four options "--input=<file>", "--output=<file>", "--segfault", "--catch" and set appropriate flags. If the "--input=<file>" option is set then the specified <file> is used in replace of stdin to read text from. If the specified input file cannot open then the program reports the failure to stderr using fprintf, perror, and exits with a return code using exit(1). If the "--output=<file>" options is set then the specified <file> is used in replace of stout to write text to. If the specified output file cannot open then the program reports the failure to stderr using fprintf, perror, and exits with return code 2 using exit(2). If the "--segfault" option is set then the program will trigger a segmentation fault by setting a char * pointer to NULL and then attempting to store its value in a char. If the "--catch" option is set then the program will register a SIGSEGV handler with the signal() function. This will cause any segmentation fault to be caught, an appropriate error message to be logged to stderr, and the program to exit with a return code of 3 using exit(3). If the catch option is set, then the program will not trigger any segmentation faults (as they are caught and handled beforehand).
+
+Makefile:
+The Makefile holds the scripts to make, clean, check, and create a tarball of the contents of lab0. These options can be run using the "make" command as "make", "make clean", "make check", and "make dist" respectively. The default make command will create an executable for lab0. Make clean will rm all the object and .tar.gz files as if the executable was never built. Make check will test 5 main things. First it will test that the data from the input file is correctly copied over to the output file. Second it will test that an input file can be opened with read only permission properly. Third, it will test that an output file can be opened with read and write permissions. Fourth it will test that the --segfault option causes a segmentation fault. Finally it will test that the --catch option will catch this segfault. The last two are tested together.
+
+
+
+README:
+The README file describes the contents of lab0. 
