@@ -90,7 +90,7 @@ Prolems within computer systems
 		Kryder's Law: Disk Drive Capacity increases exponentially
 		Computer's are not getting faster (cannot keep up with size of disk drive)
 
------------------------ Class 2 (1/11) ------------------------
+----------------------- Class 2 (1/11) - Booting ------------------------
 
 Interface Evolution - (i.e. internet browsers)
 	Changing the interface can be messy because every program must be changed to handle the interface change
@@ -224,8 +224,10 @@ Sample app - no OS:
 		// first-argument: sector number
 		// second argument: memory address
 		// copy data out of disk sector to memory
-
 		// read_ide_sector will read 446 MBR code
+
+		#include <stdbool.h>
+
 		void read_ide_sector(int s, int a)	{
 			//PIO
 			
@@ -251,10 +253,373 @@ Sample app - no OS:
 			insl(0x1f0, a, 512 / 4)
 		}
 
+		// Read from disk
 		for (i=1; i< 20, i++)	{
 			read_ide_sector(i, 0x10000 + (i-1)+512)
 		}
 
+		void main(void) 	{
+
+			long nwords = 0;
+			bool inword = false;
+			unsigned s = 10000;
+
+			while(true)	{
+				char buf[512];
+				read_ide_sector(s++, (int)buf);
+				for ( int j = 0; j < 512; j+1)	{
+					if (buf[j] == '\0')	{
+						write_out(nwords);
+
+						// Do not want to return program because there is nothing to return to
+						// Sit in infinite loop to display word count forever
+						while (true) continue;
+					}
+					bool thisalpha = isalpha(buf[j]);
+					nwords += ~inword & thisalpha;
+					inword = thisalpha;
+				}
+			}
+		}
+
+----------------------- Class 3 (1/18) ------------------------
+
+memory mapped I/O
+ram 	[      |       |      ]
+				^0xb8000 address	80x25 grid of 16-bit characters
+									80x25x2 = 4000 bytes
+		Low order 8 bits Ascii characters
+		High order is color = 7 (grey on black)
+
+void write_out(long n)	{
+
+	// Pointer that points at center of screen ofset to right slightly (to account for leng of string)
+	unsigned char *screen = (unsigned char*)(0xb800 + 80*25*2/2 + 8);
+	do	{
+		screen[0] = n%10 + '0';
+		screen[1] = 7;	// Set grey color
+		screen -= 2;
+		n /= 10;
+	} while(n != 0);
+
+}
+
+	/********* Problems with original code above (has been modified now) ************
+
+	1. integer overflow given a big file (could be trillions of words and int holds ~billion)
+	2. read_ide_sector has multiple copies
+		- word count program  	<- remove copy
+		- in MBR				<- remove copy
+		- in EEPROM @ 0x7f000		<- wc program and MBR must know location in ROM
+					^Often called BIOS
+	3. Busy-waiting
+		Solution: **** Double Buffering ****
+			- use CPU to count words while waiting for next sector to be read in
+			wc countwords 				 1 2 1 ...	(CPU)
+				wait for next sector 	1 2 1 2 ... (I/O)
+	4. DMA (Direct Memory Access)
+		Problem: How "insl" works: must cross bus twice
+
+		|--- CPU  ----|
+		--------------- bus ---------------
+		RAM			  ^------------- disk controller
+
+		Solution: DMA
+			- Disk controller does the heavy lifting
+		--------------- bus ---------------
+		RAM <----------------------- disk controller
+	5. Run several apps simultaneously
+	6. (UEFI) Unified Extensible Firmware Interface
+		- smarter firmware that remembers and trusts specific GUIDs
+		- standard format for bootloader (EFI)
+		- Globally unique identifiers (GUID)
+			for partitions (128-bit nums)
+		- GUID Partition table (GPT)
+			- standard format of GUIDs that lives on disk or flash drive
+			- interpreteble by the firmware
+		- EFI partions us MS-DOS file formats
+		- UEFI boot mgr
+			- in firmware
+			- configurable via NVRAM
+			- read GPT tables off your devices
+			- can access files in DOS format
+			- can run EFI programs
+	**********************************************************************************/
+
+	Our program is bad practice to include in booting:
+		- is too much of a pain to change
+		- is too much of a pain to reuse code in other programs
+		- is too much of a pain to run several programs simultaneously
+		- is too much of a pain to recover from faults
+		- Conclusion: we don't want other programmers to have to worry about handling our program during booting
+
+	/ ************************** Modularity **************************
+		A) Break program into pieces 
+			1. wc
+			2. read_ide_sector
+			3. write_out
+			4. etc...
+		B) Software engineering advantage
+			1. N lines of code (LOC)
+			2. K modules
+			3. Bugs ~ LOC
+			4. Time to find a bug ~ LOC
+			5. Debug time: Bugs * N --> O(N^2)
+			Solution:
+				- with K modules: (Bugs/K) * (N/K) * K --> O(N^2/K)
+		C) Modularity can be good or bad
+			1. You need metrics
+				(a) Performance 									(generally hurt by modularity)
+				(b) Robustness 										(generally helped by modularity)
+					- tolerance of error in HW + SW
+				(c) Flexibility/Neutrality/Lack of Assumptions		(generally helped by modularity)
+				(d) Simplicity										(generally helped by modularity)
+					- easy to learn/use
+		D) How to implement Modularity
+			/ *********** NO MODULARITY ************ /
+			0) Don't do it
+
+			/ *********** SOFT MODULARITY ************ /
+							(Not ideal)
+			1) Function call (caller/callee modularity)
+				(a) Example:
+						int factorial(int n)	{
+							if (n == 0)	
+								return 1;
+							else
+								return n * factorial(n-1);
+						}
+
+						// Assembly code
+						factorial
+							pushq %rbp
+							movq  %rsp, %rbp
+							subq  $16 %rsp
+							movl  %ed, -4(%rbp)
+							cmpl  $0, -4(%rbp)
+							jne   .L2			// else statement
+							movl  $1, %eax
+							jmp   .L3			// return 1 instruction
+
+						.L2
+							movl  -4(%rbp), %eax
+							subl  $1, %eax
+							movl  %eax, %edi
+							call  factorial
+							imull -4(%rbp), %eax
+
+						.L3
+							ret
+
+				(b) What can go wrong?
+					Callee has too much power
+						- Callee can read the passwords that caller handles
+						- Callee can fudge return address to return elsewhere
+						- Callee can fudge memory that is in caller's stack (stack overflow)
+						- Callee can mess with Caller's registers
+						- Callee can loop forever (never return to caller)
+					Caller also has too much power
+						- Caller can set stack pointer to 0 before jumping to callee
+						- Caller can jump into middle of callee instead of begining
+					Caller/Callee modularity is ALL based on trust
+			
+			/ ********* HARD MODULARITY ********** /
+							(ideal)
+			2) Ways to get hard modularity
+				(a) Client/Server (Use different computers each module)
+					i) communicate via a network API
+					ii) Dangers
+						- Only works if:
+							* lots of computation, low communication
+							* large modules, low communication
+						- If network goes down, can no longer communicate
+						- If bug exists in API then client could find way to mess with server
+						- Hassle to set up
+						- More resources (2 computers and a network)
+					iv) Benefits
+						- Client can only send requests
+						- Client cannot directly modify memory (no shared state/memory)
+						- If client/server enters infinite loop/crash, other side can continue its job
+				(b) Virtualization
+					i) One computer pretending to be 2+ computers
+						- [Client|Server]    rather than     [Client] <--> [Server]
+						- One computer and one CPU
+					ii) Methods of Virtualization
+						(a) Emulator
+							- Interpreter that runs all client code with checks
+								Example: ARM emulator on SEASnet x86-64
+									interp.c
+										execute_inst(char *ip)	{
+											// interpret and execute x86 instruction set
+											// checks memory addresses
+											// if trying to access improper memory, return -1; (fail)
+											// put timeout requirements on function calls
+										}
+							- Negatives: Too slow
+							- Positives: Easier for developers to debug
+						(b) Hardware support
+							- Unpriviledged instructions (99.99%)
+								* run at full speed
+								* ex:  addq $1 %eax
+							- Priviledged instructions (0.01%)
+								* Don't run at all
+								* Cause hardware traps 
+									-> Internst service vector trap array
+										# Array and trap handling functions are stored in protected memory (read_only)
+										# Divide by 0 might be trap 3
+										# Bad pointer might be trap 4
+										# Each element in array is a pointer to code that runs when its corresponding trap is hit
+											> Protected transfer of control (user -> OS)
+										# Trap handlers 128 - 255 are designed for users to use in conjunction w/ system calls (e.g. read)
+									-> Trap saves (On the stack / in memory)
+										# Stack pointer
+										# Instruction pointer
+										# Flags
+											> Including privileged flag
+										# Stack segment
+										# Code segment
+										# Error code
+									-> Trap handlers behave similar to function calls, but...
+										# More expensive (save more things than functions)
+										# Call made by invalid instruction
+										# Return made by "rti" (return from interrupt) assembly command
+										# Can execute privileged instructions
+								* ex:  halt (wouldn't want students calling halt on SEASnet server)
+							- Example:
+								char buf[511];
+								read(0, buf, 512);
+									^--- read: 	push $12
+												int 128   // simulate hardware interrupt and call trap handler 128
+							- Speeding up system calls
+								* x86 system calls
+									-> sysenter
+										sets cs, ecp, ss, esp to values set n model-specific registers (protected)
+									-> sysexit
+										sets 	ecp <- edx
+												esp <- ecx
+												cs, ss from m
+								* x86-64 system calls
+									-> syscall
+										args: 		rdi, rsi, rdx, r10, r8, r9
+										outputs: 	destroys rcx, r11 (temporary registers to use, values inside get destroyed after)
+										result: 	rax
+								* Linux VDSO (Virtual dynamically linked shared object)
+									Example:
+										$ ldd /bin/sh
+										linux-vdso so1 => (0x47744000)
+										syscall code is stored ^ in kernel at /bin/sh and can only be executed by kernel
+							- Negatives:
+								* Talking to memory is too slow
+							- Diagram:
+								_________________________
+								|	   Application		|
+								|						|
+								|_________ 				|
+								| Kernel |				|
+								|-----------------------|
+								| Hardware				|
+								|						|
+								-------------------------
+							- Hardware Support Options
+								(a) stdio level
+									* ex: getchar, putchar
+								(b) syscall level
+									* ex: read, write
+								(c) Ring structured OS
+									* Kernel -> virtual memory -> files -> application
+									* Can only access layers that are further out in the ring
+									* Problem: expensive to constantly jump back to kernel
+									* Diagram: fill in rest of rings as above
+										____________
+										|	Files 	|
+										|	_______ |
+										|	|  _  |	|
+										|	| |_| |	| App
+										|	|_____|	|
+										|			|
+										|___________|
+								(d) Linux: Monolithic Kernel
+									* Trade security for performance
+					iii) Organization via Virtualization
+						(a) ALU (Arithmetic Logic Unit)
+						(b) User code has full access to:
+							- User memory
+							- rbp, rsp, rcx, rip
+						(c) Primary memory (limited access)
+							- Flags
+							- ISV
+						(d) I/O (no access, only through syscalls)
+					iv) Process
+						(a) Program in execution in an isolated domain (not aware of parallel programs)
+						(b) Run on virtualizable processor
+							- Processor that can pretend to be multiple machines
+							- Create new process through a syscall
+								* pid_t fork(void);
+									-> Child == parent except:
+										PID are different
+										PPID are diff (parentPID)
+										File descriptors start the same (but can now be modified without changing them in other processes)
+										Accumulated execution times
+										File locks (child has none)
+										Pending signals ("")
+							- Create new program through syscall
+								* int execvp(char const *file, char const **argv);
+									-> Opposite of fork, new of the following:
+										Program
+										Data
+										Registers
+										Signal handler & reset
+
+				
+
+		E) Modularity when creating OS
+			1) Goals
+				(a) Protection
+				(b) Robustness
+				(c) Utilization
+				(d) Performance
+				(e) Flexibility
+				(f) Flexibility
+				(g) Simplicity
+			2) System Abstractions
+				(a) Memory
+					i) load + store
+					ii) read + write
+					iii) size?
+					iv) word_size?
+					v) throughput
+					vi) Lotery
+					vii) volatility
+						- Volatile memory goes away when computer turned off
+						- Non-volative memory is stored (want user to BELIEVE everything is non-volatile)
+					viii) Linear vs associative
+					ix) Coherrence
+				(b) Interpreter
+					i) Environment pointers
+						- Where is stack? (pointer to address)
+						- Repetoire
+							* instruction pointers
+						- Normal execution vs. exceptional execution
+							* throw
+							* trap: system crash, but catch and continue
+				(c) Links
+					(i) send + receive
+						- e.g. I/O Bus
+						- send address, receive data
+						- gives developer asynchronus behavior (unlike memory loading)
+			3) Selection: Hardware support
+				(a) stdio level
+					ex: getchar, putchar
+				(b) syscall level
+					ex: read, write
+				(c) Ring structured OS
+					- Kernel -> virtual memory -> files -> application
+					- Can only access layers that are further out in the ring
+					- Problem: expensive to constantly jump back to kernel
+				(d)
+
+
+	******************************************************************/
 
 // ***************** Discussion: Lab0 / Lab 1A overview ***************** //
 Lab 0:
