@@ -564,13 +564,45 @@ void write_out(long n)	{
 										Pending signals ("")
 							- Create new program through syscall
 								* int execvp(char const *file, char const **argv);
-									-> Opposite of fork, new of the following:
+									-> Opposite of fork, create new of the following:
 										Program
 										Data
 										Registers
 										Signal handler & reset
+							- Send signal to kill process
+								* int kill(pid_t p, int sig);
+							- Changes status of process from running to exit
+								* _Noreturn void exit(int status);
+									-> Tries to clean up first
+								* _Noreturn void _exit(int status);
+								* _Noreturn void P_exit(int status);
+									-> Don't try to clean up
+								* Doesn't actually kill process, sets it as "zombie" process 
+									-> exit status can still be retrieved
+									-> CPU usage measurments can be retrieved
+								* Standard: 0 exit successfully (non-zero not good)
+							- Wait for child process to die (only wait to really kill a process)
+								* pid_t waitpid(pid_t pid, int *status, int options);
+									-> pid: pid of process
+									-> status: where status will be place once process dies
+									-> options: WNOHANG (causes program to not hang if program is still running, give up)
+									-> Can only wait for your children to die (not other random processes)
+										Why: User cannot wait for themselves, two process could wait in infinite loop
+										This is called "REAPING the child process"
+							- Kernel sends process a self-kill alarm after ___ seconds
+								* unsigned alarm(unsigned seconds);
+							- Wrapper function to create + manage child process program all in one
+								* int posix_spawnvp(pid_t *restrict pid, char const *restrict file, posix_spawn_file_actions_t const * file_acts, posix_spawn_atr_t const *restrict attrp, char *const *restrict argv, char *const *restrict envp);
+									// *retrict pointers can only point to memory that no other pointer also points to
+									// pid = pid of created child process
+									// file = file name of executable
+									// file_acts = array of actions for child process to carry out (e.g. [ open("foo", O_WRONLY)])
+									// attrp = attributes for child process
+									// argv = arguments for child process
+									// envp = environment variables
+									// function rarely used because it makes multi-processing a data structure problem instead of code
+									// LINUX splits this problem into fork() + execvp() orthogonal issues
 
-				
 
 		E) Modularity when creating OS
 			1) Goals
@@ -609,17 +641,112 @@ void write_out(long n)	{
 						- gives developer asynchronus behavior (unlike memory loading)
 			3) Selection: Hardware support
 				(a) stdio level
-					ex: getchar, putchar
+					- ex: getchar, putchar
 				(b) syscall level
-					ex: read, write
+					- ex: read, write, fork, execvp, kill
 				(c) Ring structured OS
 					- Kernel -> virtual memory -> files -> application
 					- Can only access layers that are further out in the ring
 					- Problem: expensive to constantly jump back to kernel
-				(d)
-
-
 	******************************************************************/
+
+
+// ******************************* Print Date Program ********************************* //
+
+	// Returning from main is the same as exit, but not from sub-functions
+
+	// example execution: date >f 2>&1
+
+	void printDate(void)	{
+		pid_t p = fork();
+		if (p < 0)	{	// error
+			return false;
+		}	else if (p == 0)	{ 	// parent process
+			alarm(10);	// kill child process after 10 sec (timeout)
+			if (open("foo", O_WRONLY | O_CREAT | O_TRUNC) < 0) error();
+			if (dup2(fd,1) < 0) error();
+			if (dup2(fd,2) < 0) error();
+			if (fd != 0 && fd != 1 && fd != 2)
+				if (close(fd) < 0) error();
+			char xargs[] = {"date", "-u", (char*)0};
+			execle("/usr/bin/date", args);
+			_exit(23);
+		}	else 	{ 	// parent process
+			int status;
+			if (waitpid(p, &status, 0) != p)	{
+				return false;
+			}
+			return WIFEXIED(status) && WEXITSTATUS(status) == 0;
+			//     ^check for normal exit && ^check for child exit status 0
+		}
+	}
+
+	// date.c
+	int main(int argc, char **argv)	{
+		clockgetline(...);
+		gmtime(...);
+		printf(...);
+		return 0;
+	}
+
+	// Create a temporary unlinked file as a buffer
+	// If sorting a TB file with only 1 GB ram, must store and sort 1 GB file at a time
+	if (0 <= fd)	{
+		if (unlink("file") == 0)
+			size_t n = write(fd), "xyzzy", 5);
+	}
+
+// ******************************* OS Organization ********************************* //
+
+I) Files
+	A) regular files (array of bites)
+	B) directories (mappings from file name components to attribute)
+	C) /dev/null
+	D) /dev/full (attempting to write to it says it's full)
+	E) /dev/zero (read succeeds and returns all zeros, write always fails)
+	F) /dev/tty0 (read returns keystrokes)
+	G) /dev/dsk/0 (write puts bytes on disk drive, read returns bytes on disk drive)
+	H) pipes (communication pathway from one process to another, represented as read file and write file)
+	J) File descriptor table
+		1) per process
+		2) drawing
+			_________
+			|	1	| -> file "..."
+			---------
+			|	2	| -> file "..."
+			---------
+			|	3	| -> file "..."
+			---------
+			|	4	| -> file "..."
+			---------
+II) System calls
+	A) int open(char const* f, int flags, ...);
+		1) ... = variable arguments that you may need to pass to open depending on the flags (e.g. 0666, 0644, 0222)
+		2) flags: O_RDONLY, O_WRONLY, O_RDWR, O_EXEC
+		3) additional flags: O_TRUNC | O_CREAT (these are added in with bit wise | or opperator)
+		4) returns a file descriptor
+	B) int creat(char const *f, mode_t m);
+		1) equivalent to open(f, O_RDWR | O_CREAT | O_TRUNC, m);
+	C) int close(int fd);
+		1) returns -1 if failure
+	D) Why are file descriptors ints?
+		1) How to model OS resources in a user program
+			(i) opaque handles:
+				(a) int
+				(b) struct file*
+			(ii) transparent pointers:
+				(a) struct t_file {char *name};
+III) Processes
+	A) Process table
+		1) system wide
+		2) drawing:
+			exit status
+			-----------
+			|||||||||||
+		pid	-----------
+			|||||||||||
+			-----------
+
 
 // ***************** Discussion: Lab0 / Lab 1A overview ***************** //
 Lab 0:
