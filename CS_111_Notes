@@ -748,6 +748,171 @@ III) Processes
 			-----------
 
 
+// ********************* What's can go wrong c file descriptors *********************** //
+	
+	1) Problems:
+		A) Open too many files (there is a limited ~2014 available fd's)
+		B) USB has been removed or I/O error (like can only read first 100 bytes or 1000 byte file)
+			i) fd = open("/dev/usb", O_RDONLY);
+				// fd == -1
+		C) Read from file with no data
+			i) read(fd, ...);
+				// returns 0 b/c not actually an error in reading file
+		D) Read from keyboard
+			i) fdk = open("/dev/tty", O_RDONLY);
+			ii) read(fdk, ...)
+				// blocks program from running on, wait for user input
+		E) Race Conditions
+			i) Behavior that depends on timing
+			ii) Difficult to debug b/c they show up and disappear from run to run
+			iii) ex: 	(cat a & cat b) > c
+						(cat > a & cat > b) < c
+			iv) ctrl-c exit example: (SIGINT)
+					gzip foo.tar
+						// reads foo.tar
+						// write foo.tar.gz
+						// removes foo.tar
+						// ctrl-c should (a) remove foo.tar.gz OR (b) remove foo.tar if foo.tar.gz is done
+					int main(int argc, char **argv)	{
+						int fdk = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+						int fdi = open("foo.tar", O_RDONLY);
+						int fdo = open("foo.tar.gz", OWRONLY | OCREAT, OTRUNC, 0666);
+						signal(SIGINT, handle_control_c);	// Signal option
+						do {
+							if (read(fdk, &c, 1) == 1 && c == 3)	{	// Polling option
+								unlink("foo.tar.gz");
+								return 1;
+							}
+							n = read(fdi, ...);
+							commands...
+							write(fdo, ...);
+						} while(0 < n);
+						close(fdo);
+						signal(SIGINT, SIGIGN);	// Signal ignore to "cancel" SIGINT handler
+						unlink("foo.tar");
+					}
+		2) Two solutions to errors 
+			A) Polling: check whether user inputted ctrl-c in every long loop
+			B) Signals: 
+				i) separate program into two parts
+					(a) Signal handler: small part that handles the signal
+					(b) Main program: large part that doesn't worry about signal/polling
+				ii) Signal examples
+					(a) Goals
+					(b) Uncooperative programs in loops (e.g. user mistakenly feeds infinite file as input)
+					(c) Invalid program (e.g. illegal insn SIGILL)
+					  	 - Floating point exception (SIGFPE)
+					 	 - Invalid address (SIGSRGV - e.g. access null pointer) (SIGBUS - e.g. access odd address when should be multiple of 2)
+					(d) I/O errors
+						- SIGIO
+						- SIGPIPE: write to a pipe c no readers (a | b)
+							// b exits
+							// a does a write(...)
+							// printf("hello\n"); returns SIGPIPE when failing to write to read-end of pipe
+					(e) Processes
+						- SIGCHLD: a child died
+							// to call waitpid(W_NOHANG) immediately would be a way to handle same problem with polling
+					(f) User signals
+						- SIGKILL (9): Process immediately becomes a zombie (not catchable!)
+						- SIGSTOP: 	Stops, but doesn't kill program (Cannot be ignored)
+						- SIGTSTP: 	Stops, but doesn't kill program (Ctrl + Z  can be ignored)
+						- SIGCONT: 	continues stopped program
+						- SIGHUP: 	hangup (user logs out)
+						- SIGALRM: 	alarm clock
+				iii) How signals are handled
+					(a) Change to processes abstract machine
+					(b) Between any pair of instrunctions a signal can be called
+						|inst|inst|inst|sig_handler|inst|inst|inst|
+						// signal_handler gets spliced in between two machine code instructions
+					(c) Singal handler function (specified by app) is executed
+					(d) ex:
+						x = 1;
+						// Signal handler called (x might not be either old or new value)
+						y = x++;
+						z = x + y;
+					(e) Using a signal handler
+						signal(SIGINT, handle_control_c);
+						void handle_control_c(int sig)	{
+							pthread_sigmask(block SIGNINT);	<----- This line is not necessary because it is the default to block signal during signal_handler
+							unlink("foo.tar.gz");
+							_exit(126);
+							pthread_sigmask(old set);		<----- Default
+						}
+				iv) Ignoring signals (SIGIGN)
+					(a) signal(SIGINT, SIGIGN);
+						// Ignores signal handler assigned to SIGINT
+					(b) Critical Section
+						Option 1: Will discard/ignore all SIGINT signals during critical section
+							signal(SIGINT, SIGIGN);
+							// Critical part of program that should not be interrupted by user
+							signal(SIGINT, handle_control_c);
+						Option 2: Will catch and trigger all SIGINT signals after critical section ends
+							pthread_sigmask(block SIGINT);
+							// Critical part of program
+							pthread_sigmask(old set);
+				v) Dangers with Sig handlers
+					(a) Always use Async-safe functions
+						- Not safe for work: 	stdio, malloc, printf, anything that accesses table/memory/IO_buffers
+						- Safe: 				read, write, close, unlink
+						- ex:
+							void handle_sig(int sig)	{
+								FILE *f = fopen("file", "w")	
+									// fopen calls malloc which inspects/modifies heap data structures
+									// if main program is calling malloc then fopen in handle_sig is called... fopen will interupt heap allocation of unstable data structure
+								fprintf(f, "caught signal %d\n", sig);
+								fclose(f);
+							}
+				vi) Common practices
+					(a) ex:
+						static sig_atomic_t volatile interrupted_flag
+						void handle_control_c(int sig) { interrupted_flag = 1;}
+							// Very simple so that no IO/Memory/etc. functions are called in handler by accident
+						for (i=0; i < 10000000000; i++) {
+							if (interrupted_flag) break;		<------------------ Back to polling!!! For people who want polling, not signals
+						}
+				vii) Pros:
+					(a) Can manage processes better
+					(b) Fixed some robustness & performance issues
+				viii) Cons:
+					(a) Processes are too isolated
+					(b) Signals at any time cause race conditions
+					(c) Signal handling is notoriously buggy
+				ix) Best Solution?
+					(a) What we want:
+						- Less isolation than multi-processes
+						- Async calls
+						- More predictable ID
+					(b) Solution --> Threads
+						- Get rid of memory isolation
+							// Helps performance in doing things like signals/pipes
+						- Share:
+							// Overall threads share MOST things so they are lightweight
+							// Thousands of threads is OK
+							Memory (address space)
+							Code
+							File descriptors
+							owner
+							pid
+							ppid
+						- Don't Share
+							Registers 	(including instruction pointers)
+							Stack 		(diff stacks needed to handle diff instruction pointers/registers)
+							thread_id
+							errno
+					(c) Multi-threading
+						- How to handle 1000 threads with 8 cores?
+							// Resource allocation problem
+							// CPU runs a scheduler program to schedule the CPU (tell it which thread to run)
+							// _______________________________________________
+							// | 0  |  1  |  2  |  3  |  4  |  5  |  6 |  7  |
+								----------------------------------------------
+							// Each core runs its own scheduler
+						- Scheduler tasks
+							// Mechanism to pass control back to scheduler in between threads
+								* syscall 
+							// Policy (later)
+
+
 // ***************** Discussion: Lab0 / Lab 1A overview ***************** //
 Lab 0:
 	Read/Write permissions:
