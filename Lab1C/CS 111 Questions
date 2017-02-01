@@ -1,0 +1,9 @@
+CS 111 Questions:
+
+- When opening a pipe, does the funciton automatically create 2 "files" and assign them fds?
+
+- If we open a subprocess, should all fds that are not specified in the command argument "--command i o e cmd args" by "i o e" be closed? They should never be needed.
+
+- Is it up to the user to never attempt to write to a read end of a pipe/file? Should we simply throw an error message and exit if this happens? Vice versa as well (read a write only file)
+
+- If a file gets closed, do I need to ensure that this fd never gets reassigned to another file? Or does open() handle this?
