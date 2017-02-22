@@ -28,7 +28,7 @@ lnxsrv09
 "We don't offer a ready-made programme, but an entire operating system."
 	- Marina Weisland (The Economist 2013-01-105 p.19)
 
-Other OS in the news
+Other OS in the news:
 	1. Alexa. Amazon's Operating System personal assistant cloud-based O.S. creates framework for smart devices
 	2. Crouton on Chromebook <- Ubuntu in a browser tab
 	3. Red Star OS - North Korean OS
@@ -37,7 +37,7 @@ Other OS in the news
 		- Watermark all files
 		- Attempts to prevent modifications to OS
 
-"System" - defined
+System:
 	1. An organized or connected group of objects
 	2. A set of principles, etc., a scheme, method
 	3. A set of interconnected components that has a specified behavior observed at the interface with its enbironments
@@ -58,41 +58,42 @@ Interfaces:
 	2. Master {control} program in a computer
 	3. System software that {manages} computer hardware and software {resources} and provides common services for compiler programs
 
-Operating System
+Operating System:
 	1. Give users the power to control hardware of specific data processing system
 	2. Tightly coupled to hardware
 
-Prolems within computer systems
-	1) Incommensurate scaling: not everything scales at the same rate
+Prolems within computer systems:
+	1. Incommensurate scaling: not everything scales at the same rate
 		Diseconomies of scale
 			Ex: star network - all inputs are connected to all other networks, exponential growth
 			Can cause breakage as you grow
 		Economies of scale
 			Ex: pin factory - much more efficient for one person to buy one long piece of wire, and fashion all 10,000 pins at once
 			Can cause wasting (over production)
-	2) Emergent properties - properties of the system that arise as you scale
+	2. Emergent properties - properties of the system that arise as you scale
 		Qualitatively different, often unanticipated
 		Ex: Tacoma Narrows - largest bridge ever built, hadn't thought about resonant frequency due to wind
 		Ex: UCLA Wifi - student dorms at UCLA used to download/send illegal content
-	3) Propogation of effects (butterfly effect)
+	3. Propogation of effects (butterfly effect)
 		Happens to often in OS
 		Ex: SJIS encoding - Microsoft used 2 bytes to represent each character
 			- First bite was a '1' to signify SJIS encoding
 			- Left 2^15 character arrangements
 			- SJIS encoding leaked into file directory system (ascii based)
 			- If '\' byte was found within a 2-byte representation of a japanese character, it was read as a file separator instead of part of japanese character
-	4) Tradeoffs
+	4. Tradeoffs
 		Waterbed effect - pushing down on one side of bed moves another part up
 		Fixing one thing may affect other things and make the system as a while more complicated
 		Ex: time-space balancing
-	5) Complexity
+	5. Complexity
 		Moore's Law: Need for # transisotr's on a computer increases logarithmically
 		Kryder's Law: Disk Drive Capacity increases exponentially
 		Computer's are not getting faster (cannot keep up with size of disk drive)
 
 ----------------------- Class 2 (1/11) - Booting ------------------------
 
-Interface Evolution - (i.e. internet browsers)
+Interface Evolution:
+	Example: (i.e. internet browsers)
 	Changing the interface can be messy because every program must be changed to handle the interface change
 
 	Options attempting to allow remote access to files:
@@ -120,7 +121,7 @@ Interface Evolution - (i.e. internet browsers)
 			// Uses a VERY specific string of "directory" to dictate a remote file system
 			// Used on SEASNET server to access remote file systems
 			// Table created on SEASNET server to reserve this path name for a remote server
-		[c]
+		[end]
 
 Sample app - no OS:
 	Paranoid professor - 10,000 word limit file
@@ -130,23 +131,23 @@ Sample app - no OS:
 	Words match [A-Za-z]+ regex
 	File is an array of bytes (ASCII) stored on the disk drive
 
-	Priorities in order
-	1) Security
-	2) Speed
+	Priorities in order:
+		1. Security
+		2. Speed
 
 	Questions we need answered:
-		- Where is the file located?
+		1. Where is the file located?
 			Answer: sector 1,000,000
-		- How do we access the file?
+		2. How do we access the file?
 
 	Process:
-	1) Turn computer on
-	2) Program runs
-		- Count words that match [A-Za-z]+ regex expression
-		- Increment word counter when hitting non-repeating a character not in expression
-		- Display word count
+		1. Turn computer on
+		2. Program runs
+			- Count words that match [A-Za-z]+ regex expression
+			- Increment word counter when hitting non-repeating a character not in expression
+			- Display word count
 
-	Disk Drives
+	Disk Drives:
 		- Rotating magnetic device
 		- Separated into sections
 		- Closed off from air to prevent dust
@@ -169,24 +170,24 @@ Sample app - no OS:
 					Hot plugging: can unplug disk drive while drive and CPU are running without causing a fire
 					CPU ----- 1-bit-wire -----> controller -> disk drive
 
------------- Boostrapping ------------
-x86 components important to booting:
+-------------- Boostrapping --------------
+Booting components (x86):
 	A) Physical RAM
 		Two main parts:
-			1) Real DRAM (real memory)
-			2) ROM (Read only memory) 
+			1. Real DRAM (real memory)
+			2. ROM (Read only memory) 
 				- Location on RAM is hardwired into hardware (0xffff0)
 				- Contents survive a power outage
 				- Stored in EEPROM (Electronically Erasable Programmable Read-Only Memory)
 					Set by the manufacturer
 					Normally:
-						i) 		Tests system
-						ii) 	Walk through bus looking for devices
-						iii) 	Finds a bootable device
-						iv) 	Read device's first sector (512 bytes) into RAM
+						i. 		Tests system
+						ii. 	Walk through bus looking for devices
+						iii. 	Finds a bootable device
+						iv. 	Read device's first sector (512 bytes) into RAM
 								- memory location 0x7c00 hardwired into the BIOS
 								- memory location 0x7c00 to 0x7dff is modified (512 bytes)
-						v)		Jump 0x7c00
+						v.		Jump 0x7c00
 				Master Boot Record (MBR) - 512 Bytes (sector 0)
 					[||||||||||||  64  |2]
 					final 2 byte sector
@@ -208,19 +209,19 @@ x86 components important to booting:
 
 
 ------------ BIOS ------------
-	Job:
-	1) Get first sector into RAM
-	2) Start running it
+Purpose:
+	1. Get first sector into RAM
+	2. Start running it
 
-	Overview:
-		BIOS -> MBR -> VBR -> execute word count code
+Overview:
+	BIOS -> MBR -> VBR -> execute word count code
 
 Solution to booting problem:
-	1) BIOS loads in MBR
-	2) Jump to 0x7c00 (1st 446-bytes of MBR) and execute Boot Loader source code
-	3) This source code will send word count program to RAM to execute
+	1. BIOS loads in MBR
+	2. Jump to 0x7c00 (1st 446-bytes of MBR) and execute Boot Loader source code
+	3. This source code will send word count program to RAM to execute
 
-	Boot loader source code:
+Boot loader source code:
 	// At location 0x7c00 run the following code
 	// read-write 20 sectors
 	// first-argument: sector number
@@ -284,32 +285,32 @@ Solution to booting problem:
 			}
 		}
 	}
-	[c]
+	[end]
 
 ----------------------- Class 3 (1/18) ------------------------
 
 Memory mapped I/O:
-ram 	[      |       |      ]
-				^0xb8000 address	80x25 grid of 16-bit characters
-									80x25x2 = 4000 bytes
-		Low order 8 bits Ascii characters
-		High order is color = 7 (grey on black)
+	ram 	[      |       |      ]
+					^0xb8000 address	80x25 grid of 16-bit characters
+										80x25x2 = 4000 bytes
+			Low order 8 bits Ascii characters
+			High order is color = 7 (grey on black)
 
-[c]
-void write_out(long n)	{
+	[c]
+	void write_out(long n)	{
 
-	// Pointer that points at center of screen ofset to right slightly (to account for leng of string)
-	unsigned char *screen = (unsigned char*)(0xb800 + 80*25*2/2 + 8);
-	do	{
-		screen[0] = n%10 + '0';
-		screen[1] = 7;	// Set grey color
-		screen -= 2;
-		n /= 10;
-	} while(n != 0);
-}
-[c]
+		// Pointer that points at center of screen ofset to right slightly (to account for leng of string)
+		unsigned char *screen = (unsigned char*)(0xb800 + 80*25*2/2 + 8);
+		do	{
+			screen[0] = n%10 + '0';
+			screen[1] = 7;	// Set grey color
+			screen -= 2;
+			n /= 10;
+		} while(n != 0);
+	}
+	[end]
 
-	----------- Problems with original code above (has been modified now) -----------
+Problems with original code above (has been modified now):
 
 	1. integer overflow given a big file (could be trillions of words and int holds ~billion)
 	2. read_ide_sector has multiple copies
@@ -350,23 +351,24 @@ void write_out(long n)	{
 			- can access files in DOS format
 			- can run EFI programs
 
-	Our program is bad practice to include in booting:
-		- is too much of a pain to change
-		- is too much of a pain to reuse code in other programs
-		- is too much of a pain to run several programs simultaneously
-		- is too much of a pain to recover from faults
-		- Conclusion: we don't want other programmers to have to worry about handling our program during booting
+Our program is bad practice to include in booting:
+	1. is too much of a pain to change
+	2. is too much of a pain to reuse code in other programs
+	3. is too much of a pain to run several programs simultaneously
+	4. is too much of a pain to recover from faults
+	5. Conclusion: we don't want other programmers to have to worry about handling our program during booting
 
 -----------------------------------------------------------
      					Modularity
 -----------------------------------------------------------
 
-A) Break program into pieces 
+Break program into pieces:
 	1. wc
 	2. read_ide_sector
 	3. write_out
 	4. etc...
-B) Software engineering advantage
+
+Software engineering advantage:
 	1. N lines of code (LOC)
 	2. K modules
 	3. Bugs ~ LOC
@@ -374,7 +376,8 @@ B) Software engineering advantage
 	5. Debug time: Bugs * N --> O(N^2)
 	Solution:
 		- with K modules: (Bugs/K) * (N/K) * K --> O(N^2/K)
-C) Modularity can be good or bad
+
+Modularity can be good or bad:
 	1. You need metrics
 		(a) Performance 									(generally hurt by modularity)
 		(b) Robustness 										(generally helped by modularity)
@@ -382,42 +385,44 @@ C) Modularity can be good or bad
 		(c) Flexibility/Neutrality/Lack of Assumptions		(generally helped by modularity)
 		(d) Simplicity										(generally helped by modularity)
 			- easy to learn/use
-D) How to implement Modularity
-	----------- NO MODULARITY -----------
-	0) Don't do it
 
-	----------- SOFT MODULARITY -----------
+How to implement Modularity:
+	<----------- NO MODULARITY ----------->
+	1. Don't do it
+
+	<---------- SOFT MODULARITY ----------->
 					(Not ideal)
-	1) Function call (caller/callee modularity)
+	2. Function call (caller/callee modularity)
 		(a) Example:
-				int factorial(int n)	{
-					if (n == 0)	
-						return 1;
-					else
-						return n * factorial(n-1);
-				}
+			[c]
+			int factorial(int n)	{
+				if (n == 0)	
+					return 1;
+				else
+					return n * factorial(n-1);
+			}
 
-				// Assembly code
-				factorial
-					pushq %rbp
-					movq  %rsp, %rbp
-					subq  $16 %rsp
-					movl  %ed, -4(%rbp)
-					cmpl  $0, -4(%rbp)
-					jne   .L2			// else statement
-					movl  $1, %eax
-					jmp   .L3			// return 1 instruction
+			// Assembly code
+			factorial
+				pushq %rbp
+				movq  %rsp, %rbp
+				subq  $16 %rsp
+				movl  %ed, -4(%rbp)
+				cmpl  $0, -4(%rbp)
+				jne   .L2			// else statement
+				movl  $1, %eax
+				jmp   .L3			// return 1 instruction
 
-				.L2
-					movl  -4(%rbp), %eax
-					subl  $1, %eax
-					movl  %eax, %edi
-					call  factorial
-					imull -4(%rbp), %eax
+			.L2
+				movl  -4(%rbp), %eax
+				subl  $1, %eax
+				movl  %eax, %edi
+				call  factorial
+				imull -4(%rbp), %eax
 
-				.L3
-					ret
-
+			.L3
+				ret
+			[end]
 		(b) What can go wrong?
 			Callee has too much power
 				- Callee can read the passwords that caller handles
@@ -430,12 +435,12 @@ D) How to implement Modularity
 				- Caller can jump into middle of callee instead of begining
 			Caller/Callee modularity is ALL based on trust
 	
-	----------- HARD MODULARITY -----------
+	<----------- HARD MODULARITY ----------->
 					(ideal)
-	2) Ways to get hard modularity
-		(a) Client/Server (Use different computers each module)
-			i) communicate via a network API
-			ii) Dangers
+	3. Ways to get hard modularity
+		a. Client/Server (Use different computers each module)
+			i. communicate via a network API
+			ii. Dangers
 				- Only works if:
 					* lots of computation, low communication
 					* large modules, low communication
@@ -443,16 +448,16 @@ D) How to implement Modularity
 				- If bug exists in API then client could find way to mess with server
 				- Hassle to set up
 				- More resources (2 computers and a network)
-			iv) Benefits
+			iv. Benefits
 				- Client can only send requests
 				- Client cannot directly modify memory (no shared state/memory)
 				- If client/server enters infinite loop/crash, other side can continue its job
-		(b) Virtualization
-			i) One computer pretending to be 2+ computers
+		b. Virtualization
+			i. One computer pretending to be 2+ computers
 				- [Client|Server]    rather than     [Client] <--> [Server]
 				- One computer and one CPU
-			ii) Methods of Virtualization
-				(a) Emulator
+			ii. Methods of Virtualization
+				a. Emulator
 					- Interpreter that runs all client code with checks
 						Example: ARM emulator on SEASnet x86-64
 							interp.c
@@ -464,14 +469,14 @@ D) How to implement Modularity
 								}
 					- Negatives: Too slow
 					- Positives: Easier for developers to debug
-				(b) Hardware support
+				b. Hardware support
 					- Unpriviledged instructions (99.99%)
 						* run at full speed
 						* ex:  addq $1 %eax
 					- Priviledged instructions (0.01%)
 						* Don't run at all
 						* Cause hardware traps 
-							-> Internst service vector trap array
+							-> Internet service vector trap array
 								# Array and trap handling functions are stored in protected memory (read_only)
 								# Divide by 0 might be trap 3
 								# Bad pointer might be trap 4
@@ -528,11 +533,11 @@ D) How to implement Modularity
 						|						|
 						-------------------------
 					- Hardware Support Options
-						(a) stdio level
+						a. stdio level
 							* ex: getchar, putchar
-						(b) syscall level
+						b. syscall level
 							* ex: read, write
-						(c) Ring structured OS
+						c. Ring structured OS
 							* Kernel -> virtual memory -> files -> application
 							* Can only access layers that are further out in the ring
 							* Problem: expensive to constantly jump back to kernel
@@ -545,20 +550,31 @@ D) How to implement Modularity
 								|	|_____|	|
 								|			|
 								|___________|
-						(d) Linux: Monolithic Kernel
+						d. Linux: Monolithic Kernel
 							* Trade security for performance
-			iii) Organization via Virtualization
-				(a) ALU (Arithmetic Logic Unit)
-				(b) User code has full access to:
+			iii. Organization via Virtualization
+				a. ALU (Arithmetic Logic Unit)
+				b. User code has full access to:
 					- User memory
 					- rbp, rsp, rcx, rip
-				(c) Primary memory (limited access)
+				c. Primary memory (limited access)
 					- Flags
 					- ISV
-				(d) I/O (no access, only through syscalls)
-			iv) Process
-				(a) Program in execution in an isolated domain (not aware of parallel programs)
-				(b) Run on virtualizable processor
+				d. I/O (no access, only through syscalls)
+			iv. Process
+				a. Program in execution in an isolated domain (not aware of parallel programs)
+				b. Multi-Processing:
+					Share:
+						Code
+						owner
+					Don't Share:
+						File descriptors
+						pid
+						ppid
+						Memory (address space)
+						Registers 	(including instruction pointers)
+						Stack 		(diff stacks needed to handle diff instruction pointers/registers)
+				c. Run on virtualizable processor
 					- Processor that can pretend to be multiple machines
 					- Create new process through a syscall
 						* pid_t fork(void);
@@ -610,47 +626,47 @@ D) How to implement Modularity
 							// function rarely used because it makes multi-processing a data structure problem instead of code
 							// LINUX splits this problem into fork() + execvp() orthogonal issues
 
-E) Modularity when creating OS
-	1) Goals
-		(a) Protection
-		(b) Robustness
-		(c) Utilization
-		(d) Performance
-		(e) Flexibility
-		(f) Flexibility
-		(g) Simplicity
-	2) System Abstractions
-		(a) Memory
-			i) load + store
-			ii) read + write
-			iii) size?
-			iv) word_size?
-			v) throughput
-			vi) Lotery
-			vii) volatility
+Modularity when creating OS:
+	1. Goals
+		a. Protection
+		b. Robustness
+		c. Utilization
+		4. Performance
+		5. Flexibility
+		6. Flexibility
+		7. Simplicity
+	2. System Abstractions
+		a. Memory
+			i. load + store
+			ii. read + write
+			iii. size?
+			iv. word_size?
+			v. throughput
+			vi. Lotery
+			vii. volatility
 				- Volatile memory goes away when computer turned off
 				- Non-volative memory is stored (want user to BELIEVE everything is non-volatile)
-			viii) Linear vs associative
-			ix) Coherrence
-		(b) Interpreter
-			i) Environment pointers
+			viii. Linear vs associative
+			ix. Coherrence
+		b. Interpreter
+			i. Environment pointers
 				- Where is stack? (pointer to address)
 				- Repetoire
 					* instruction pointers
 				- Normal execution vs. exceptional execution
 					* throw
 					* trap: system crash, but catch and continue
-		(c) Links
-			(i) send + receive
+		c. Links
+			i. send + receive
 				- e.g. I/O Bus
 				- send address, receive data
 				- gives developer asynchronus behavior (unlike memory loading)
-	3) Selection: Hardware support
-		(a) stdio level
+	3. Selection: Hardware support
+		a. stdio level
 			- ex: getchar, putchar
-		(b) syscall level
+		b. syscall level
 			- ex: read, write, fork, execvp, kill
-		(c) Ring structured OS
+		c. Ring structured OS
 			- Kernel -> virtual memory -> files -> application
 			- Can only access layers that are further out in the ring
 			- Problem: expensive to constantly jump back to kernel
@@ -700,24 +716,24 @@ E) Modularity when creating OS
 		if (unlink("file") == 0)
 			size_t n = write(fd, "xyzzy", 5);
 	}
-	[c]
+	[end]
 
 -----------------------------------------------------------
     				OS Organization
 -----------------------------------------------------------
 
-I) Files
-	A) regular files (array of bites)
-	B) directories (mappings from file name components to attribute)
-	C) /dev/null
-	D) /dev/full (attempting to write to it says it's full)
-	E) /dev/zero (read succeeds and returns all zeros, write always fails)
-	F) /dev/tty0 (read returns keystrokes)
-	G) /dev/dsk/0 (write puts bytes on disk drive, read returns bytes on disk drive)
-	H) pipes (communication pathway from one process to another, represented as read file and write file)
-	J) File descriptor table
-		1) per process
-		2) drawing
+Files:
+	1. regular files (array of bites)
+	2. directories (mappings from file name components to attribute)
+	3. /dev/null
+	4. /dev/full (attempting to write to it says it's full)
+	5. /dev/zero (read succeeds and returns all zeros, write always fails)
+	6. /dev/tty0 (read returns keystrokes)
+	7. /dev/dsk/0 (write puts bytes on disk drive, read returns bytes on disk drive)
+	8. pipes (communication pathway from one process to another, represented as read file and write file)
+	9. File descriptor table
+		a. per process
+		b. drawing
 			_________
 			|	1	| -> file "..."
 			---------
@@ -727,27 +743,27 @@ I) Files
 			---------
 			|	4	| -> file "..."
 			---------
-II) System calls
-	A) int open(char const* f, int flags, ...);
-		1) ... = variable arguments that you may need to pass to open depending on the flags (e.g. 0666, 0644, 0222)
-		2) flags: O_RDONLY, O_WRONLY, O_RDWR, O_EXEC
-		3) additional flags: O_TRUNC | O_CREAT (these are added in with bit wise | or opperator)
-		4) returns a file descriptor
-	B) int creat(char const *f, mode_t m);
-		1) equivalent to open(f, O_RDWR | O_CREAT | O_TRUNC, m);
-	C) int close(int fd);
-		1) returns -1 if failure
-	D) Why are file descriptors ints?
-		1) How to model OS resources in a user program
-			(i) opaque handles:
-				(a) int
-				(b) struct file*
-			(ii) transparent pointers:
-				(a) struct t_file {char *name};
-III) Processes
-	A) Process table
-		1) system wide
-		2) drawing:
+System calls:
+	1. int open(char const* f, int flags, ...);
+		a. ... = variable arguments that you may need to pass to open depending on the flags (e.g. 0666, 0644, 0222)
+		b. flags: O_RDONLY, O_WRONLY, O_RDWR, O_EXEC
+		c. additional flags: O_TRUNC | O_CREAT (these are added in with bit wise | or opperator)
+		d. returns a file descriptor
+	2. int creat(char const *f, mode_t m);
+		a. equivalent to open(f, O_RDWR | O_CREAT | O_TRUNC, m);
+	3. int close(int fd);
+		a. returns -1 if failure
+	4. Why are file descriptors ints?
+		a. How to model OS resources in a user program
+			i. opaque handles:
+				- int
+				- struct file*
+			ii. transparent pointers:
+				- struct t_file {char *name};
+Processes:
+	1. Process table
+		a. system wide
+		b. drawing:
 			exit status
 			-----------
 			|||||||||||
@@ -757,208 +773,209 @@ III) Processes
 
 
 --------------------- What's can go wrong c file descriptors ---------------------
-	
-	1) Problems:
-		A) Open too many files (there is a limited ~2014 available fd's)
-		B) USB has been removed or I/O error (like can only read first 100 bytes or 1000 byte file)
-			[c]	fd = open("/dev/usb", O_RDONLY);	[c]
-				// fd == -1
-		C) Read from file with no data
-			[c]	read(fd, ...);	[c]
-				// returns 0 b/c not actually an error in reading file
-		D) Read from keyboard
-			[c]	fdk = open("/dev/tty", O_RDONLY);
-				read(fdk, ...)
-				// blocks program from running on, wait for user input
+
+Problems:
+	1. Open too many files (there is a limited ~2014 available fd's)
+	2. USB has been removed or I/O error (like can only read first 100 bytes or 1000 byte file)
+		[c]	fd = open("/dev/usb", O_RDONLY);	[end]
+			// fd == -1
+	3. Read from file with no data
+		[c]	read(fd, ...);	[end]
+			// returns 0 b/c not actually an error in reading file
+	4. Read from keyboard
+		[c]	fdk = open("/dev/tty", O_RDONLY);
+			read(fdk, ...)
+			// blocks program from running on, wait for user input
+		[end]
+	5. Race Conditions:
+		a. Behavior that depends on timing
+		b. Difficult to debug b/c they show up and disappear from run to run
+		c. ex: 	(cat a & cat b) > c
+					(cat > a & cat > b) < c
+		d. ctrl-c exit example: (SIGINT)
+			gzip foo.tar
+				// reads foo.tar
+				// write foo.tar.gz
+				// removes foo.tar
+				// ctrl-c should (a) remove foo.tar.gz OR (b) remove foo.tar if foo.tar.gz is done
 			[c]
-		E) Race Conditions
-			i) Behavior that depends on timing
-			ii) Difficult to debug b/c they show up and disappear from run to run
-			iii) ex: 	(cat a & cat b) > c
-						(cat > a & cat > b) < c
-			iv) ctrl-c exit example: (SIGINT)
-					gzip foo.tar
-						// reads foo.tar
-						// write foo.tar.gz
-						// removes foo.tar
-						// ctrl-c should (a) remove foo.tar.gz OR (b) remove foo.tar if foo.tar.gz is done
-					[c]
-					int main(int argc, char **argv)	{
-						int fdk = open("/dev/tty", O_RDONLY | O_NONBLOCK);
-						int fdi = open("foo.tar", O_RDONLY);
-						int fdo = open("foo.tar.gz", OWRONLY | OCREAT, OTRUNC, 0666);
-						signal(SIGINT, handle_control_c);	// Signal option
-						do {
-							if (read(fdk, &c, 1) == 1 && c == 3)	{	// Polling option
-								unlink("foo.tar.gz");
-								return 1;
-							}
-							n = read(fdi, ...);
-							commands...
-							write(fdo, ...);
-						} while(0 < n);
-						close(fdo);
-						signal(SIGINT, SIGIGN);	// Signal ignore to "cancel" SIGINT handler
-						unlink("foo.tar");
+			int main(int argc, char **argv)	{
+				int fdk = open("/dev/tty", O_RDONLY | O_NONBLOCK);
+				int fdi = open("foo.tar", O_RDONLY);
+				int fdo = open("foo.tar.gz", OWRONLY | OCREAT, OTRUNC, 0666);
+				signal(SIGINT, handle_control_c);	// Signal option
+				do {
+					if (read(fdk, &c, 1) == 1 && c == 3)	{	// Polling option
+						unlink("foo.tar.gz");
+						return 1;
 					}
+					n = read(fdi, ...);
+					commands...
+					write(fdo, ...);
+				} while(0 < n);
+				close(fdo);
+				signal(SIGINT, SIGIGN);	// Signal ignore to "cancel" SIGINT handler
+				unlink("foo.tar");
+			}
+			[end]
+Two solutions to errors:
+	1. Polling: check whether user inputted ctrl-c in every long loop
+	2. Signals: 
+		a. separate program into two parts
+			i. Signal handler: small part that handles the signal
+			ii. Main program: large part that doesn't worry about signal/polling
+		b. Signal examples
+			i. Goals
+			ii. Uncooperative programs in loops (e.g. user mistakenly feeds infinite file as input)
+			iii. Invalid program (e.g. illegal insn SIGILL)
+			  	 - Floating point exception (SIGFPE)
+			 	 - Invalid address (SIGSRGV - e.g. access null pointer) (SIGBUS - e.g. access odd address when should be multiple of 2)
+			iv. I/O errors
+				- SIGIO
+				- SIGPIPE: write to a pipe c no readers (a | b)
+					// b exits
+					// a does a write(...)
+					// printf("hello\n"); returns SIGPIPE when failing to write to read-end of pipe
+			v. Processes
+				- SIGCHLD: a child died
+					// to call waitpid(W_NOHANG) immediately would be a way to handle same problem with polling
+			vi. User signals
+				- SIGKILL (9): Process immediately becomes a zombie (not catchable)
+				- SIGSTOP: 	Stops, but doesn't kill program (Cannot be ignored)
+				- SIGTSTP: 	Stops, but doesn't kill program (Ctrl + Z  can be ignored)
+				- SIGCONT: 	continues stopped program
+				- SIGHUP: 	hangup (user logs out)
+				- SIGALRM: 	alarm clock
+		c. How signals are handled
+			i. Change to processes abstract machine
+			ii. Between any pair of instrunctions a signal can be called
+				|inst|inst|inst|sig_handler|inst|inst|inst|
+				// signal_handler gets spliced in between two machine code instructions
+			iii. Singal handler function (specified by app) is executed
+			iv. ex:
+				[c]
+				x = 1;
+				// Signal handler called (x might not be either old or new value)
+				y = x++;
+				z = x + y;
+				[end]
+			v. Using a signal handler
+				signal(SIGINT, handle_control_c);
+				void handle_control_c(int sig)	{
+					pthread_sigmask(block SIGNINT);	<----- This line is not necessary because it is the default to block signal during signal_handler
+					unlink("foo.tar.gz");
+					_exit(126);
+					pthread_sigmask(old set);		<----- Default
+				}
+		d. Ignoring signals (SIGIGN)
+			i. signal(SIGINT, SIGIGN);
+				// Ignores signal handler assigned to SIGINT
+			ii. Critical Section
+				Option 1: Will discard/ignore all SIGINT signals during critical section
 					[c]
-		2) Two solutions to errors 
-			A) Polling: check whether user inputted ctrl-c in every long loop
-			B) Signals: 
-				i) separate program into two parts
-					(a) Signal handler: small part that handles the signal
-					(b) Main program: large part that doesn't worry about signal/polling
-				ii) Signal examples
-					(a) Goals
-					(b) Uncooperative programs in loops (e.g. user mistakenly feeds infinite file as input)
-					(c) Invalid program (e.g. illegal insn SIGILL)
-					  	 - Floating point exception (SIGFPE)
-					 	 - Invalid address (SIGSRGV - e.g. access null pointer) (SIGBUS - e.g. access odd address when should be multiple of 2)
-					(d) I/O errors
-						- SIGIO
-						- SIGPIPE: write to a pipe c no readers (a | b)
-							// b exits
-							// a does a write(...)
-							// printf("hello\n"); returns SIGPIPE when failing to write to read-end of pipe
-					(e) Processes
-						- SIGCHLD: a child died
-							// to call waitpid(W_NOHANG) immediately would be a way to handle same problem with polling
-					(f) User signals
-						- SIGKILL (9): Process immediately becomes a zombie (not catchable)
-						- SIGSTOP: 	Stops, but doesn't kill program (Cannot be ignored)
-						- SIGTSTP: 	Stops, but doesn't kill program (Ctrl + Z  can be ignored)
-						- SIGCONT: 	continues stopped program
-						- SIGHUP: 	hangup (user logs out)
-						- SIGALRM: 	alarm clock
-				iii) How signals are handled
-					(a) Change to processes abstract machine
-					(b) Between any pair of instrunctions a signal can be called
-						|inst|inst|inst|sig_handler|inst|inst|inst|
-						// signal_handler gets spliced in between two machine code instructions
-					(c) Singal handler function (specified by app) is executed
-					(d) ex:
-						[c]
-						x = 1;
-						// Signal handler called (x might not be either old or new value)
-						y = x++;
-						z = x + y;
-						[c]
-					(e) Using a signal handler
-						signal(SIGINT, handle_control_c);
-						void handle_control_c(int sig)	{
-							pthread_sigmask(block SIGNINT);	<----- This line is not necessary because it is the default to block signal during signal_handler
-							unlink("foo.tar.gz");
-							_exit(126);
-							pthread_sigmask(old set);		<----- Default
-						}
-				iv) Ignoring signals (SIGIGN)
-					(a) signal(SIGINT, SIGIGN);
-						// Ignores signal handler assigned to SIGINT
-					(b) Critical Section
-						Option 1: Will discard/ignore all SIGINT signals during critical section
-							[c]
-							signal(SIGINT, SIGIGN);
-							// Critical part of program that should not be interrupted by user
-							signal(SIGINT, handle_control_c);
-							[c]
-						Option 2: Will catch and trigger all SIGINT signals after critical section ends
-							[c]
-							pthread_sigmask(block SIGINT);
-							// Critical part of program
-							pthread_sigmask(old set);
-							[c]
-				v) Dangers with Sig handlers
-					(a) Always use Async-safe functions
-						- Not safe for work: 	stdio, malloc, printf, anything that accesses table/memory/IO_buffers
-						- Safe: 				read, write, close, unlink
-							[c]
-							void handle_sig(int sig)	{
-								FILE *f = fopen("file", "w")	
-									// fopen calls malloc which inspects/modifies heap data structures
-									// if main program is calling malloc then fopen in handle_sig is called... fopen will interupt heap allocation of unstable data structure
-								fprintf(f, "caught signal %d\n", sig);
-								fclose(f);
-							}
-							[c]
-				vi) Common practices
-					(a) ex:
-						[c]
-						static sig_atomic_t volatile interrupted_flag
-						void handle_control_c(int sig) { interrupted_flag = 1;}
-							// Very simple so that no IO/Memory/etc. functions are called in handler by accident
-						for (i=0; i < 10000000000; i++) {
-							if (interrupted_flag) break;		<------------------ Back to polling - For people who want polling, not signals
-						}
-						[c]
-				vii) Pros:
-					(a) Can manage processes better
-					(b) Fixed some robustness & performance issues
-				viii) Cons:
-					(a) Processes are too isolated
-					(b) Signals at any time cause race conditions
-					(c) Signal handling is notoriously buggy
+					signal(SIGINT, SIGIGN);
+					// Critical part of program that should not be interrupted by user
+					signal(SIGINT, handle_control_c);
+					[end]
+				Option 2: Will catch and trigger all SIGINT signals after critical section ends
+					[c]
+					pthread_sigmask(block SIGINT);
+					// Critical part of program
+					pthread_sigmask(old set);
+					[end]
+		e. Dangers with Sig handlers
+			i. Always use Async-safe functions
+				- Not safe for work: 	stdio, malloc, printf, anything that accesses table/memory/IO_buffers
+				- Safe: 				read, write, close, unlink
+					[c]
+					void handle_sig(int sig)	{
+						FILE *f = fopen("file", "w")	
+							// fopen calls malloc which inspects/modifies heap data structures
+							// if main program is calling malloc then fopen in handle_sig is called... fopen will interupt heap allocation of unstable data structure
+						fprintf(f, "caught signal %d\n", sig);
+						fclose(f);
+					}
+					[end]
+		f. Common practices
+			i. ex:
+				[c]
+				static sig_atomic_t volatile interrupted_flag
+				void handle_control_c(int sig) { interrupted_flag = 1;}
+					// Very simple so that no IO/Memory/etc. functions are called in handler by accident
+				for (i=0; i < 10000000000; i++) {
+					if (interrupted_flag) break;		<------------------ Back to polling - For people who want polling, not signals
+				}
+				[end]
+		g. Pros:
+			i. Can manage processes better
+			ii. Fixed some robustness & performance issues
+		h. Cons:
+			i. Processes are too isolated
+			ii. Signals at any time cause race conditions
+			iii. Signal handling is notoriously buggy
 
 
 
 --------------------- Multi-Threading ---------------------
 
-I) Best Solution for signal handling (rather than multi-processing)
-	A) What we want:
-		1. Less isolation than multi-processes
-		2. Async calls
-		3. More predictable ID
-	B) Solution --> Threads
-		1. Get rid of memory isolation
-			i) Helps performance in doing things like signals/pipes
-		2. Share:
-			i) 		Overall threads share MOST things so they are lightweight
-			ii) 	Thousands of threads is OK
-			iii) 	Memory (address space)
-			iv) 	Code
-			v) 		File descriptors
-			vi) 	owner
-			vii)	pid
-			viii) 	ppid
-		3. Don't Share
-			i) 	Registers 	(including instruction pointers)
-			ii) Stack 		(diff stacks needed to handle diff instruction pointers/registers)
-			iii)thread_id
-			iv) errno
-	C) Multi-threading:
-		1. How to handle 1000 threads with 8 cores?
-			i) 	Resource allocation problem
-			ii) CPU runs a scheduler program to schedule the CPU (tell it which thread to run)
-			iii) 	_______________________________________________
+Best Solution: for signal handling (better than multi-processing)
+	1. What we want:
+		a. Less isolation than multi-processes
+		b. Async calls
+		c. More predictable ID
+	2. Solution --> Threads
+		a. Get rid of memory isolation
+			i. Helps performance in doing things like signals/pipes
+		b. Share
+			i. 		Overall threads share MOST things so they are lightweight
+			ii. 	Thousands of threads is OK
+			iii. 	Memory (address space)
+			iv.		Code
+			v. 		File descriptors
+			vi. 	owner
+			vii.	pid
+			viii. 	ppid
+		c. Don't Share
+			i. 		Registers 	(including instruction pointers)
+			ii. 	Stack 		(diff stacks needed to handle diff instruction pointers/registers)
+			iii. 	thread_id
+			iv. 	errno
+	3. Multi-threading:
+		a. How to handle 1000 threads with 8 cores?
+			i. 	Resource allocation problem
+			ii. CPU runs a scheduler program to schedule the CPU (tell it which thread to run)
+			iii. 	_______________________________________________
 				 	| 0  |  1  |  2  |  3  |  4  |  5  |  6 |  7  |
 					----------------------------------------------
-			iv) Each core runs its own scheduler
-		2. Scheduler tasks
-			i) 	Mechanism to pass control back to scheduler in between threads
+			iv. Each core runs its own scheduler
+		b. Scheduler tasks
+			i. 	Mechanism to pass control back to scheduler in between threads
 				(a) syscall 
-			ii) Policy (later)
-		3. Code
-			i)		#include <pthread.h>
-			ii)		int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);	// like fork()
-			iii)	void pthread_exit(void *retval);						// like exit(status)
-			iv)		int pthread_join(pthread_t thread, void **retval);		// like waitpid
-			v) 		int pthread_kill(pthread_t thread, int sig);
-		4. Writing cooperative threads
-			i)	Main issues:
-				(a) Threads table - Organizes the following:
-					- Thread IDs
-					- Wait device (which device is holding up each thread)
-			ii) Problem: Must yield the CPU to other threads (for fairness)
-				(a)	Possible Solutions:
-					- #include <sched.h>
-					- int sched_yield(void);
+			ii. Policy (later)
+		c. Code
+			i.		#include <pthread.h>
+			ii.		int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg);	// like fork()
+			iii.	void pthread_exit(void *retval);						// like exit(status)
+			iv.		int pthread_join(pthread_t thread, void **retval);		// like waitpid
+			v. 		int pthread_kill(pthread_t thread, int sig);
+		d. Writing cooperative threads
+			i. Threads table - Organizes the following:
+				- Thread IDs
+				- Wait device (which device is holding up each thread)
+			ii. Problem: Must yield the CPU to other threads (for fairness)
+				Possible Solutions:
+					[c]
+					#include <sched.h>
+					int sched_yield(void);
+					[end]
 						# at every system call the kernel chooses whihc non-running thread to return to
 							// Dangerous --> Could cause INFINITE LOOP
 						# every 100 ms or less, use a system call??
 							// sched_yield
 						# hardware timer in
 							// Traps every 10 ms --> execute system call (sched_yield) trap code --> clock interrupt code (saves this thread) and can return to other thread
-			iii)Problem: Infinite loops in multi-threaded programs won't be caught
-				(a)	Possible Solutions:
+			iii. Problem: Infinite loops in multi-threaded programs won't be caught
+				Possible Solutions:
 					- Timeout	alarm(100);			// Will rarely select the correct timeout time
 					- Don't use loops without static upper bound!
 					- User initiated interrupts (ctrl-c)
@@ -968,7 +985,7 @@ I) Best Solution for signal handling (rather than multi-processing)
 							2. Polling 			// while (!ready(dev)) sched_yield();
 							3. Blocking			// while (!ready(dev)) wait_for(dev);
 							// Need more details to determine if these options are viable
-			iV)	Which thread to run next?
+			iv.	Which thread to run next?
 				(a) Policy (not mechanism)
 				(b) Scheduling = (policy + mechanisms)
 					- e.g. airline scheduling
@@ -993,7 +1010,7 @@ I) Best Solution for signal handling (rather than multi-processing)
 							# 1 earliest deadline fast
 							# 2 rate-monotonic scheduling in the CPU to each thread
 							# 3 Assign higher priorities to threads that need to run more frequently / more CPU
-			v) Scheduling Metrics:
+			v. Scheduling Metrics:
 				(a) Order arrives -------> execute order ----> 1st output ------------------> done
 					|  		wait time    		|
 					|			response time 	   			 		|
@@ -1007,9 +1024,9 @@ I) Best Solution for signal handling (rather than multi-processing)
 				(d) Software-Specific Metrics:
 					1. Throughput 	(useful work per unit time)
 					2. Utilization	(percent utilization of CPU)
-					3. Fairness 	(each thread gets "fair" priority)
+					3. Fairness 	(each thread gets "fair: no job waits forever" priority)
 						# Utilization and Fairness are often inversely related (difficult to maximize both)
-			vi) Simple Scheduling Policies
+			vi. Simple Scheduling Policies
 				(a) First Come First Serve (FCFS)
 					1. Priority = arival time (no yielding)
 						// Run jobs until completion
@@ -1023,12 +1040,560 @@ I) Best Solution for signal handling (rather than multi-processing)
 							// Don't forget to account for ^ gap time (g)
 						Problem: <Convoy Effect>
 							- long running job always delays later jobs (slow truck on one-lane highway)
-					2. Shortest Job First
-						Visual: AAAAA | BB | DDDD | CCCCCCCCC
-						- Better average wait time than FCFS
-						- Better average turnaround time than FCFS
-						- Same total time
+				(b) Shortest Job First
+					1. Visual: AAAAA | BB | DDDD | CCCCCCCCC
+					2. Better average wait time than FCFS
+					3. Better average turnaround time than FCFS
+					4. Same total time
+					5. Less fairness
+				(c) Preemption & Scheduling
+					1. Quantum: 10 ms in GNU/Linux
+					2. Divide CPU time into quantum
+						- Round Robin: pass off CPU after your process uses its quantum
+							- new jobs get added to back of queue, not front
+						- much more overhead switching quantums
+					3. Visual: A | B | C | D | A | B | C | D | A | C | D | A | C | D | A | C | C | C | C | C
+																 ^--- B finished and no longer needs to run (removed from cycle)
+					4. Minimizes avg wait time = 0 
+					5. Similar avg turnaround time as SJF (if delta overhead to switch processes is small)
+					6. Maximizes fairness
+			v. Other Priority Scheduling
+				(a) User-assigned (static)
+					$ nice -n 3 make linux
+						- Adjust "niceness" of program
+				(b) system-assigned (dynamic) 
+	4. Synchronization
+		a. Biggest probelm with Multi-threading
+		b. Default is unsynchronized (dangerous)
+			i. Usually works
+		c. Coordinating actions 
+			i. 	 In a shared address space
+			ii.  Maintain data consistency
+			iii. Do so efficiently (utlization + latency)
+			iv.	 Clear + simple
+		d. Race conditions
+			i. Behavior of program will differ based on which thread is executed first
+		e. Observability
+			i. 	How outside world (Apps) sees inside the system (kernel + OS)
+				(a) App makes syscalls, loads, stores
+				(b) App will want to check that load happened properly
+			ii.  It's okay to produce race conditions as long as outside world cannot observe it
+			iii. Serializability
+				Sequence of states and threads
+				S0 -- T1 --> S1 -- T2 --> S2 -- T1 --> S3 ...
+		f. Isolation
+			i.	Independent actions
+				- (store 1000, load 2000)
+			ii.	Atomicity
+				- actions are related, but system arranges for X finishes before Y starts, or vice versa
+		g. Bank example
+			i. Two brothers share a bank account and could potentially withdraw at same time
+				[c]
+				unsigned long balance = 10000;
+				
+				void deposit(unsigned long amt)	{
+					// Start critical section
+					if (!builtin_add_overflow_p(balance, amount))	{
+						balance += amt;
+						// End critical section
+					}
+				}
 
+				bool withdraw(unsigned long amt)	{
+					// Start critical section
+					if (amt <= balance)	{
+						balance -= amt;
+						// End critical section
+						return true;
+					}
+				}
+
+				bool transfer(unsigned long amt, int from, int to)	{
+					// Critical section for two accounts at once
+				}
+
+				bool audit_all_accounts()	{
+					// Critical section for all accounts!
+				}
+				[end]
+			ii. Brother (T1): deposit(1000)
+			iii. Myself (T2): withdraw(2000)
+			iv. If executed in parallel:
+				- Both function calls could "load balance"
+				- Then both could attempt to change balance
+				- The end result wlll only reflect one total function call 
+		h. Critical sections
+			i. At most one thread's instruction ptr is in a critical section
+			ii. Don't want crit sec to be to large (lose performance due to bottlenecking)
+			iii. Don't want crit sec to be to small (dangerous)
+			vi. Finding a minimal critical section
+				- Writes to shared state 	(main focus)
+				- Dependent reads 			(grows the critical section)
+				- Reads to large objects like structs
+			v. Atomic Operations
+				- allowed to have benevolent side effects as long as you can't observer them
+					e.g. update a cache invisible to user
+		j. Enforcing Critical Sections - simple system
+			i. Assume 1 CPU, syscalls for all actions, no preemption, no hardware traps
+			ii. Every syscall is a critical section
+			iii. temporarily mask traps before
+			iv. unmask traps after
+		k. Enforcing Critical Sections - multiple CPUs
+			i. 2 part problem:
+				- mutual exclusion 	(no two threads in critical sections)
+				- bounded wait 		(any thread in C.S. will exit quickly)
+			ii. Pipe example:
+				[c]
+				struct pipe {
+					char buf[1024];
+					size_t r,w;
+				};
+
+				bool write(struct pipe *p, char c)	{
+					if (p->w==p->r == 1024) return false;
+					p->buf[p->w++%1024]=c;
+					return true;
+				}
+
+				char read(struct pipe *p)	{
+					if (p->r==p->w) return -1;
+					return p->buf[p->r++%1024];
+				}
+
+				[end]
+
+--------------------- Atomicity (Multi-threading cont.) ---------------------
+Handling Critical Sections:
+	a) Uniprocessor:
+		1. Only problem is interrupts -> disable them during critical sections
+		2. ex:	[c]
+			#define N 1024;
+
+			struct pipe 	{
+				unsigned char buf[N];
+				size_t r, w;
+			}
+
+			bool writec(struct pipe *p, char c) 	{
+				disable_interrupts();
+				if (p->w - p->r == N)	{enable_interrupts; return EOF;}
+				p->buf[p->w++ % N] = c;
+				enable_interrupts();
+				return 1;
+			}
+
+			// Implementing critical sections on a uniprocessor, only problem is interrupt
+			// Be careful to enable interrupts for all code paths!
+			int readc(struct pipe *p)	{
+				disable_interrupts();
+				if(p->w==p->r) {enable_interrupts; return EOF;}
+				int x = p->buf[p->r+++ % N];
+				enable_interrupts();
+				return x;
+			}
+
+			[end]
+	b) Multicore_Processor:
+		1. Other problems...
+		2. lock solution (incomplete): [c]
+			typedef int mutex_t;
+
+			// pre-condition: you don't own the lock
+			// spin-lock
+			void lock(mutex_t *m)	{
+				while(*m)
+					continue;
+				*m=1;
+			}
+
+			// pre-condition: you do own the lock
+			void unlock(mutex_t *m)	{
+				*m=0;
+			}
+
+			#define N 1024;
+			mutex_t m;
+
+			struct pipe 	{
+				unsigned char buf[N];
+				size_t r, w;
+			}
+
+			bool writec(struct pipe *p, char c) 	{
+				lock(&p->m);
+				if (p->w - p->r == N)	{enable_interrupts; return EOF;}
+				p->buf[p->w++ % N] = c;
+				unlock(&p->m);
+				return 1;
+			}
+
+			// Implementing critical sections on a uniprocessor, only problem is interrupt
+			// Be careful to enable interrupts for all code paths!
+			int readc(struct pipe *p)	{
+				lock(&p->m);
+				if(p->w==p->r) {enable_interrupts; return EOF;}
+				int x = p->buf[p->r+++ % N];
+				unlock(&p->m);
+				return x;
+			}
+
+			[end]
+			c. Intel says: loads & stores are atmoic for aligned words only - address is a multiple of size (* 1,2,4,8)
+				i. 	lock incl x 	// 32-bit x++ atomic addition
+				ii. CPU <--- 10000 instruction <---- RAM
+					(a) 10000 interrupt instruction is expensive (more than others)
+			d. xchg solution: 
+				// Use exchange instruction
+				[c]
+				int xchg(int *p, int v)	{
+					// atomically check if lock is set, if not then lock it
+				}
+
+				void lock(*m) {
+					while (xchg(m, 1))
+						continue;
+				}
+
+				// Do not need while loop for unlock because pre-condition ensures that thread currently owns the lock
+				void unlock(*m) {*m=0;}
+				[end]
+		3. Compare_and_swap: (solution)
+			a. [c]
+				compare_and_swap(int *D, int old, int new)	{
+					// This whole if statement is one single x86 instruction
+					// Makes it atomic
+					if (*v==0)	{
+						*v = n;
+						return 1;
+					}
+					return 0;
+				}
+
+				lock(*m)	{
+					// Ensures that the old value was 'x' and new value is 'y'
+					for (;;) 	{
+						int x0 = x;
+						int y = f(x);	// pure
+					}
+					if (compare_and_swap(&m, x, y))
+						break;
+				}
+			[end]
+		4. Hardware_Lock_Elision: (Intel Haswell)
+			// Checks lock, compares, if not equal then 'jump' back to 'try'
+			// xacqurire is a hardware atomic-load
+			lock:	movl 	$1	%eax
+			try:	xacquire	lock 	xchg 	%eax,(%rbx)
+					cmpl 		$0,%eax
+					jnz 		try
+					ret
+					_____________________
+			unlock:	xrelease	movl	$0,(%rbs)
+				ret
+		5. Blocking_Mutex_Solution:
+			// This solution is meant to avoid polling (spin-locks)
+			// It does so by using a mutex and spin-lock
+			a. Try to get lock, and if you can't, go to sleep for a while
+			b. can be implemented on top of spin-locks
+			c. 	[c]
+				struct process {
+					...
+					struct process next;
+					...
+				}
+
+				typedef struct bmutex_t {
+					mutex_t m;
+					bool locked;
+					struct process *waiting **waiting_tail;
+				} bmutex_t;
+
+				void acquire(bmutex_t *b) {
+					for (;;)	{
+						lock(&b->m);
+						if (!b->locked)	{
+							b->locked = true;
+							unlock(&b->m);
+							return;
+						}
+						self->next = NULL;
+						*b->waiting_tail = self
+						b->waiting_tail  = &self->next;
+						unlock(&b->m);
+						self->blocked = true;
+						yield();
+					}
+				}	
+
+				// Safe only if blocking mutex code is only thing affecting process table
+				// If multiple critical sections with mutex lock, it could mess up process table
+				void release(bmutex_t *b)	{
+					lock(&b->m);
+					b->locked = false;
+					process *p = b->waiting;
+					if (p)	{
+						p->blocked=false;
+						p->waiting = p->next;
+						if (!b->waiting)
+							b->waiting_tail = &b->waiting;
+					}
+					unlock(&b->m);
+				}		
+
+				int main()	{
+
+					acquire(&p->m);
+					// Only wake up when someone passes lock AND write pipe isn't full
+					if (p->w - p->r == N)	{
+						release(&p->m);
+						// Want to implement following line
+						// yield(until p->w - p->r != N);
+					}
+				}
+				[end]
+			d. Condition_Variables:
+				i. blocking mutex + logical condition (app desides condition = true | false)
+				ii. [c]
+					struct pipe {
+						char buf[8192];
+						size_t r,w;
+						bmutex_t b;
+						condvar_t pipe_is_full;
+						condvar_t pipe_is_empty;
+					}
+
+					void wait(condvar_t *c, bmutex_t *b)	{ /*
+					- Precondition: b is already acquired
+					- Actions:		releases b, blocks until some other process notifies via condvar
+									reaquires b, then returns
+					*/	}
+
+					void notify_cond(condvar_t * c);
+					void broadcast_cond(condvar_t *c);
+
+					void write(struct pipe *p, char c) 	{
+						acquire(&p->b);
+						while (p->w - p->r == 8192)	// pipe full --> wait
+							wait(&p->pipe_is_full, &p->b);
+						p->buf[p->w++%8192]=c;
+						notify_cond(&p->pipe_is_empty);
+						release(&p->b);
+					}
+
+					char read(struct pipe *p)	{
+						acquire(&p->b);
+						while (p->w - p->r == 0)	// pipe full --> wait
+							wait(&p->pipe_is_empty, &p->b);
+						char c = p->buf[p->w++%8192]
+						notify_cond(&p->pipe_is_full);
+						release(&p->b);
+						return c;
+					}
+					[end]
+			e. Semaphores:
+				i. 		Blocking mutex with an int (not a boolean)
+						// e.g. <= 10 simultaneous users
+				ii. 	P = down = acquire 	('P' short for prolag: "Try and decrease")
+				iii.	V = up = release 	('V' short for verhoog: "Increment")
+			f. Deadlock: An OVER synchronization problem!
+				Deadlock is a race condition
+					i. Four_Conditions:
+						1. Circular wait
+						2. Mutual exclusion 	(if I have access to an object, no one else can)
+						3. No preemption 		(if someone has lock, you can't just take it)
+						4. Hold & wait 			(ability to hold one lock while waiting for another)
+					ii. Breaking any of these four conditions breaks deadlock
+				// Let's make cat more efficient
+				i. cat: [c]
+					lock(&fd[0], m);
+					read(0, &buf, 512);
+					unlock(&fd[0], m);
+					lock(&fd[1], m); 
+					write(1, &buf, 512); 
+					unlock(&fd[1], m);
+					[end]
+						// read command
+				ii. copy: [c]
+					lock(&fd[0], m);
+					lock(&fd[1], m);
+					copy(0, 1, 512);
+					unlock(&fd[0], m);
+					unlock(&fd[1], m);
+					[end]
+					(a) Problem:
+						1. If another copy command locks fd[1] after you lock fd[0], but not fd[1], you're screwed!
+					(b) Soultions:
+						1. Acquire locks in order // &l < &m
+						2. If a lock is not immediately available, unlock all and try again
+						3. Only use compare_and_swap
+				iii. Linux_Solution: Dynamic detection of circularities
+					(a) Attempt to call wait that will complete a deadlock (circular wait) will fail
+					(b) wait call returns --> EWOULD_DEADLOCK
+			g. Other_synchronization_problem:
+				Parent <--- Read/Write ---> Child
+
+				P: 	write(small command);
+					write(small command);
+
+				C: 	read(small cmd);
+					write(large result);	// hangs
+			h. Priority_Inversion_Problem:
+				Made by the Mars Pathfinder 1997
+				i. Thread threads: T_low, T_med, T_high  (priorities)
+					ex: T_high might be -> keep contact with earth
+						T_med might be 	-> collecting data
+						T_low might be 	-> checking battery power
+				ii. Starting:
+					T_low 	= runnable --> grabs lock
+					T_med	 = waiting
+					T_high 	= waiting
+				iii. T_high becomes runnable
+					T_high starts -> computing -> attempts to acquire lock -> waiting (lock is held by T_low)
+				iv. T_med starts  -> computing -> no need to lock anything -> computes for long time
+					// T_high is locked out AND processor is consummed by T_med
+				Solutions: preemption, T_low borrows T_high's priority
+	c) Event_Driven_Programming: asynchronous (inverse of threads)
+			a. example: [c]
+				while(1)	{
+					e = get_next_event();
+					handle_event(e); 	// must finish quickly
+				}
+				[end]
+			b. Livelock_Problem: doing work that's not useful
+				example: receive livelock 
+					i.  request = turn_light_on | turn_light_off
+					ii. users can repeatedly ask for on --> off --> on --> off --> etc.
+					iii. get request -> start handling -> generate subevents -> get req
+				To Fix:
+					- discard events more enthusiastically
+					- e.g. disable interrupts when system is loaded
+
+
+
+--------------------- File Systems ---------------------
+File_System_Performance:
+	1. Properties of file systems:
+		- 120 Pb = 120,000 TB
+		- 200,000 drives (each 600 GB)
+		- GPFS (General Pallelel File System)
+		- Striping
+		- Distributed Metadata  (e.g. "ls -l file" --> "-rw-r eggert eggert 2017-02-20 file")
+			// Data about the data
+			* often all metadata stored on one disk
+		- Distributed locking
+			* No single node owns an object
+		- Partition Awareness
+		- fsck ("while booting" - file system stays up during maintenance)
+			* Linux doesn't allow user to access files while being 'maintained'
+	2. Performance_Trends:
+				 	|		__|
+					|	 ___|
+		I/O Speeds 	| ___|__________I/O____
+					| _|
+		CPU Speeds	|_|____________________
+		File systems were designed for computers with faster I/O than CPU speedry
+	3. Efficient_Directory_Indexing:
+		a. Linux choice
+			i. directory is an array of pointers to files 	// slow
+		b. Let's change the data structure
+	4. Metrics:
+		a. Performance
+			- throughput bytes/sec (I/O) <--|<---These two are competitors
+			- latency (delay)			 <--|
+			- utilization (0 - 1)
+			i. Performance techniques on Secondary Stage
+				A) Batching (improves throughput)
+					- Read/write contiguous sectors from disk
+						ex: [c] 
+							getchar() // does the following
+							read(o,buf, 8192)
+							[end]
+				B) Dallying (increase throuput & decrease latency)
+					- wait for a bit before doing requests, so that you can batch them together
+				C) Prefetching (improves throughput & latency)
+					- grab data from device (disk | flash) before it's needed
+					- When does it hurt performance?
+						* when you guess wrong
+						* assume "Locality of Reference"
+							spatial locality: accessing i means accessing i+1 is likely
+							temporal locality: accessing at time t means t+1 is likely
+				D) Speculation
+					- Guess what application will do next
+		b. Organization
+	5. File System Devices
+		a. Hard Disks (cheaper / more durable / slower)
+			- 300 Mb/s external 
+			- 95 Mb/s sustained data rate (throughput)
+			- 32 Mb cache
+			- 55 ms avg latency (random access)
+		b. Disk Drive
+			- 5900 RPM 
+			- 512 bytes/sector
+			- 50000 contact starts/stops
+			- 10^-14 non-recoverable read errors/bit
+			- 0.32% AFR (Annualized Failure Rate)
+			- 6.8 W avg operations
+			- 5.5 W ide
+			- 2A startups current
+			- 70g operating shock
+			- 300g non-operating (off) shock
+		c. Flash (more expensive / wears out / faster)
+			- 60 GB
+			- 3 GB/s
+			- 1000g shock
+			- 2 GB/s I/O read
+			- 50000 writes I/O (assuming 4K writes)
+				--> 200 MB/s per sec (50K * 4K)
+	6. Possible File System Design
+		a. RT-11 (old)	// RT = Real-Time
+			i. file system is a contigous array of memory
+				| directory | file1 | file2 | file3 |
+			ii. Directory is the zero index of the array (maps the file and index)
+			iii. Problems
+				- Inserting means iterating through to look for first free space (diff to grow)
+				- Fragmentation
+			iv. Positives
+				- Throughput: O(1) access rate
+				- Predictable performance
+				- simple
+		b. Interval Fragmentation
+			i. storage assigned to a file but not used
+			ii. Worst_case: 1-byte file - 511/512 bytes used
+		c. External Fragmentation
+			i. Free storage capacity is enough
+			ii. It's scattered, so no big files anymore
+		d. FAT (file allocation table)
+			| boot sector | superblock |    FAT    | 	data-blocks 	|
+			i. Table is an array
+				- entries are 16-bit block numbers
+				- "0" means end of file
+				- "-1" means free
+				- n not = "0 | -1" next block in current file
+			ii. A single file may be stored in multiple INCONTIGUOUS blocks!
+			iii. Superblock
+				- contains: | name of file | size | 1st block location |
+			iv. How do we safely delete files?
+				- Removing entry from superblock first is too dangerous
+				- Change blocks to "-1" starting with 1st block of file -> update superblock
+			v. Problem_Ex:
+				mv D1/foo.txt D2/foo.txt
+				delete from D1 first (crash)
+				add it to D2 first (crash)
+				2 directory entries --> same file
+				rm D1/foo.txt //Will remove both
+		e. Unix file system design
+			i. BSD classic version
+			ii. | superblock | bitmap | inode-table | 8-KB blocks |
+				superblock: 
+				bitmap: array of blocks (1 if taken, 0 if empty)
+				inode-table: (1 entry per file)
+					- User ID
+					- permissions
+					- timestampes (modified, created, accessed)
+					- size
+					- link-count (# num directory entries that point to this file #)
+					- pointer-to-data (# Pointer to indirect block which points to other blocks #)
+						Can use NULL points to represent "no data allocated"
 
 
 
@@ -1085,6 +1650,6 @@ Lab 1:
     	//Execline:
     	int execvp(const char *file, char *const argv[]);
    		redirection (stdin, stdout, stderr, etc.)		//Wipes out data but keeps file
-    	[c]
+    	[end]
 
 

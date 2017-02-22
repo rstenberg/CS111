@@ -4,11 +4,6 @@
 ############## Benchmarks #############
 #######################################
 
-# Create benchmark test input files
-echo "Benchmark1" > a1.txt; \
-echo "Benchmark2" > a2.txt; \
-printf "benchmark 3\nBENCHMARK 3\nBenchmark 3" > a3.txt; \
-
 #Benchmark1
 echo ""; \
 echo "*************************"; \
@@ -17,7 +12,7 @@ echo "*************************"; \
 
 printf "\n******** (simpsh-1) ********\n"; \
 ./simpsh --profile \
---rdonly a1.txt \
+--rdonly bench1.txt \
 --pipe \
 --pipe \
 --creat --append --wronly error1.txt \
@@ -28,11 +23,8 @@ printf "\n******** (simpsh-1) ********\n"; \
 --wait; \
 sleep 1
 
-printf "\n******** (bash/dash-1) ********\n"; \
-time cat <a1.txt | tr [:lower:] [:upper:] | grep BENCHMARK1 >/dev/null
-
-# CLean up Benchmank1
-rm -f a1.txt error1.txt output1.txt
+# Clean up Benchmank1
+rm -f error1.txt output1.txt
 
 # Benchmark2
 echo ""; \
@@ -42,7 +34,7 @@ echo "*************************"; \
 
 printf "\n******** (simpsh-2) ********\n"; \
 ./simpsh --profile \
---rdonly a2.txt \
+--rdonly bench2.txt \
 --pipe \
 --pipe \
 --creat --wronly output2.txt \
@@ -53,11 +45,8 @@ printf "\n******** (simpsh-2) ********\n"; \
 --wait; \
 sleep 1
 
-printf "\n******** (bash/dash-2) ********\n"; \
-time cat -e <a2.txt | sed 's/[0-9]/-2/g' | grep 'Benchmark-2\$' >/dev/null
-
 # Clean up Benchmark2
-rm -f a2.txt error2.txt output2.txt
+rm -f error2.txt output2.txt
 
 # Benchmark3
 echo ""; \
@@ -67,7 +56,7 @@ echo "*************************"; \
 
 printf "\n******** (simpsh-3) ********\n"; \
 ./simpsh --profile \
---rdonly a3.txt \
+--rdonly bench3.txt \
 --pipe \
 --pipe \
 --pipe \
@@ -82,11 +71,8 @@ printf "\n******** (simpsh-3) ********\n"; \
 --wait; \
 sleep 1
 
-printf "\n******** (bash/dash-3) ********\n"; \
-time sort a3.txt | tr [:lower:] [:upper:] | uniq -d | wc -l | grep '1' >/dev/null
-
 # Clean up Benchmark3
-rm -f a3.txt error3.txt output3.txt
+rm -f error3.txt output3.txt
 
 
 

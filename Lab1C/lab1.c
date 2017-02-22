@@ -37,6 +37,43 @@ int startsWith(const char *str1, const char *str2)
    return 0;
 }
 
+void printUsageTime(int who)	{
+
+	struct rusage usage;
+
+	// Get parent resource information with getrusage
+	if (getrusage(who, &usage) == -1)	{
+
+		// Error attempting to get rusage
+		perror("Error");
+		exit(1);
+	}	else	{
+
+		// Parse through rusage information to get end times
+		struct timeval user_time 	= usage.ru_utime;
+		struct timeval sys_time 	= usage.ru_stime;
+
+		long long user_sec 		= user_time.tv_sec;
+		double user_usec 	= (double)user_time.tv_usec / (double)1000000;
+
+		long long sys_sec 		= sys_time.tv_sec;
+		double sys_usec 		= (double)sys_time.tv_usec / (double)1000000;
+
+		double user_total 	= (double)user_sec + (double)user_usec;
+		double sys_total 	= sys_sec + sys_usec;
+
+		char *parent 	= "Parent";
+		char *children 	= "Children";
+
+		if (who == RUSAGE_SELF)		{
+			printf("%s resource usage: (user) %f | (sys) %f\n", parent, user_total, sys_total);
+		}
+		else	{
+			printf("%s resource usage: (user) %f | (sys) %f\n", children, user_total, sys_total);
+		}
+	}
+}
+
 int getFileFlags()	{
 	int flags = 0;
 
@@ -93,11 +130,8 @@ void resetFileFlags()	{
 int main(int argc, char *argv[])	{
 
 	// "--profile" variables
-	struct rusage usage;
-	int who = RUSAGE_SELF;
-	struct timeval user_start, user_end, sys_start, sys_end;
-	double user_time, sys_time;
-	double total_user_time, total_sys_time;
+	int parent = RUSAGE_SELF;
+	int children = RUSAGE_CHILDREN;
 
 	int main_exit_status = 0;
 
@@ -152,25 +186,6 @@ int main(int argc, char *argv[])	{
 	int c;
 
 	while((c = getopt_long(argc, argv, "", long_options, &option_index)) != -1)	{
-
-		// Check for profile flag
-		if (profile_flag)	{
-
-			// Get resource information with getrusage
-			if (getrusage(who, &usage) == -1)	{
-
-				// Error attempting to get
-				perror("Error");
-				exit(1);
-
-			}	else	{
-
-				// Parse through rusage information to get start times
-				user_start 	= usage.ru_utime;
-				sys_start 	= usage.ru_stime;
-
-			}
-		}
 
 		switch(c)	{
 			case 'a':		// Handle "--append" argument
@@ -642,41 +657,6 @@ int main(int argc, char *argv[])	{
 				break;
 		}
 
-		// Check for profile flag
-		if (profile_flag)	{
-
-			// Get resource information with getrusage
-			if (getrusage(who, &usage) == -1)	{
-
-				// Error attempting to get
-				perror("Error");
-				exit(1);
-			}	else	{
-
-				// Parse through rusage information to get end times
-				user_end 	= usage.ru_utime;
-				sys_end 	= usage.ru_stime;
-
-				double user_sec = (double)user_end.tv_sec - (double)user_start.tv_sec;
-				double user_usec = ((double)user_end.tv_usec)/1000000 - ((double)user_start.tv_usec)/1000000;
-
-				double sys_sec = (double)sys_end.tv_sec - (double)sys_start.tv_sec;
-				double sys_usec = ((double)sys_end.tv_usec)/1000000 - ((double)sys_start.tv_usec)/1000000;
-
-				user_time 	= user_sec + user_usec;
-				sys_time 	= sys_sec + sys_usec;
-
-				if (c == 'c')	{
-					printf("%s usage: %f (user) | %f (sys)\n", commandStrings[num_of_childProcesses - 1], user_time, sys_time);
-				}	else	{
-					printf("--%s usage: %f (user) | %f (sys)\n", long_options[option_index].name, user_time, sys_time);
-				}
-
-				total_user_time += user_time;
-				total_sys_time += sys_time;
-			}
-		}
-
 		if (c == 'f')	{	// Handle "--profile" options
 			
 			// Print profile option if verbose flag set
@@ -688,10 +668,11 @@ int main(int argc, char *argv[])	{
 		}
 	}
 
-	// Print total time if profile flag set
-	if (profile_flag)	{
-		printf("Resource usage: (user) %f | (sys) %f | (total CPU) %f\n", total_user_time, total_sys_time, total_user_time+total_user_time);
-	}
+	// Check for profile flag
+		if (profile_flag)	{
+			printUsageTime(parent);
+			printUsageTime(children);
+		}
 
 	exit(main_exit_status);
 }

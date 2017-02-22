@@ -1,0 +1,124 @@
+Name: Ryan Stenberg
+UID: 304-410-501
+Proffessor: Eggert
+TA: Bu
+
+
+
+
+// ********************************* //
+// ************ Contents *********** //
+// ********************************* //
+
+SortedList.h:
+A header file containing interfaces for linked list operations.
+
+SortedList.c:
+A source code file with implementations for insert, delete, lookup, and length methods for a sorted doubly-linked list outlined in SortedList.h (written in C)
+
+lab2_list.c:
+The lab2_list.c file holds the c source code that tests the effects and dangers of multi-threading with shared memory. The code modifies a shared doubly-linked list to demonstrate these qualities. This program takes the following options:
+
+	--thread=N    	// Where N is the number of threads to run
+	--iterations=I 	// Where I is the number of iterations each thread should run
+	--yield			// Causes the program to yield in the middle of each list modification operation
+	--sync=S 		// Where S is the sync argument (m = protected by mutex, s = protected by spin-lock)
+
+The output of lab2_list.c is a CSV with elements in the following order:
+
+	test_name, thread_count, iteration_count, list_count, operations_count, total_run_time (nanoseconds), average_run_time_per_operation (nanoseconds)
+
+Makefile:
+A makefile to build the deliverable programs. This make file has 6 higher-level targets:
+	1) build	-	compile all programs (default)
+	2) tests	-	run all specified test cases to generate CSV results
+	3) profile	-	run tests with profiling tools to generate an execution profiling report
+	4) graphs	-	use gnuplot to generate the required graphs
+	5) tarball	- 	create the deliverable tarball
+	6) clean	-	delete all generated programs and output
+
+lab_2b_list.csv:
+Contains the results for all of the Part-2 performance tests
+
+exec_profile_report:
+Report of the how much time was spent:
+	1) In the un-partitioned mutext implementation (32 threads)
+	2) In the un-partitioned spin-lock implementation (32 threads)
+
+lab2b_1.png:
+Graph of the throughput vs number of threads for mutex and spin-lock synchonized adds and list operations
+
+lab2b_2.png:
+Graph of the mean time per mutex wait and mean time per operation for mutex-synchronized list operations
+
+lab2b_3.png:
+Graph of the number of successful iterations for each synchronization method
+
+lab2b_4.png:
+Graph of the throughput vs number of threads for mutexes with partitioned lists
+
+lab2b_5.png:
+Graph of the throughout vs number of threads for spin-locks with partitioned lists
+
+README
+The README file contains descriptions of the contents within this directory. It also contains questions and analysis on lab2_add.c, lab2_list.c, and multi-threading in general.
+
+// ********************************* //
+// ********************************* //
+// ********************************* //
+
+
+
+
+
+
+// ************************************************** //
+// ******** Questions and Simulation Results ******** //
+// ************************************************** //
+
+2.3.1a)
+Q) Where do you believe most of the cycles are spent in the 1 and 2-thread tests (for both add and list)? Why do you believe these to be the most expensive parts of the code?
+A) Time is spent mostly in the actual operation. Because there are not many threads, each thread is less likely to have to wait for for a lock to be open, thus the wait time for thread is decreased.
+
+2.3.1b)
+Q) Where do you believe most of the time/cycles are being spent in the high-thread spin-lock tests?
+A) Most of the time is spent "waiting" and repeatedly checking if the lock can be acquired. When the number of threads increases, the probability that a thread reaches the critical section and a different thread has already taken the lock increases.
+
+2.3.1c)
+Q) Where do you believe most of the time/cycles are being spent in the high-thread mutex tests?
+A) Most of the time is spent performing the operations in the critical section. In the case of a mutex, a thread will go to sleep upon failing to acquire a lock. Whichever sleeping thread got to the lock first will be woken up by the thread that owns the lock as soon as it unlocks the mutex. Therefore, most threads are sleeping, allowing the thread with the mutex lock to carry out the critical section.
+
+2.3.2a)
+Q) Where (what lines of code) are consuming most of the cycles when the spin-lock version of the list exerciser is run with a large number of threads?
+A) The thread_function is consuming ~89% of the samples, and about 86% of these are attributed to the spin-lock checking to see if the lock can be acquired.
+
+2.3.2b)
+Q) Why does this operation become so expensive with large numbers of threads?
+A) Large numbers of threads means that each thread has to share a single lock with a large group of other threads. Because the lock is exclusive, only one thread may own is at a time. This causes all of the other threads (which, in this case there are a lot of) to repeatedly check back on the lock. This check is done very very fast and is repeated until the thread can obtain the lock successfully. It is expensive for this large number of threads to continually check.  
+
+2.3.3a)
+Q) Look at the average lock-wait time per operation (vs # threads) and the average wait-for-mutex time (vs #threads). Why does the average lock-wait time rise so dramatically with the number of contending threads?
+A) Only one thread can own the lock at any given time. So It would make sense for the wait-for-mutex time to increase exponentially as the number of threads increases. Not only does each thread spend a lower percentage of the total time owning the lock, but also there are more threads waiting as the number of threads increases.
+
+2.3.3b)
+Q) Why does the completion time per operation rise (less dramatically) with the number of contending threads?
+A) Even though more threads are waiting, the cpu is still executing operations nearly all of the time. Increasing the number of threads only really slows down the speed of operations when the lock's ownership is changing from one thread to another.
+
+2.3.3c)
+Q) How is it possible for the wait time per operation to go up faster (or higher) than the completion time per operation?
+A) For every thread that we add, the completion time per operation will rise slightly to account for thread switching. The wait-time-per-operation, however, will rise in a somewhat exponential fasion because each thread that does not own the lock will now, on average, wait one extra cycle before getting the lock. That additional time also gets multiplied with the fact that there is one extra thread. 
+Ex: 2 threads -> 1 thread waits for the other (1 total cycle spent waiting)
+	3 threads -> 2 threads wait for the other -> 1 thread waits for the other (3 total cycles spent waiting)
+As you can see, this is not increasing linearly.
+
+2.3.4a)
+Q) Explain the change in performance of the synchronized methods as a function of the number of lists.
+A) In general, the synchronized runs were more efficient with more lists when as the thread count increased. This is due to the fact that for each list, their is a separate lock and also a unique portion of memory that will be modified. This allows multiple threads to be editing the main thread at once (as it is split into multiple sub-lists that are guaranteed to never be modified at the same time).
+
+2.3.4b)
+Q) Should the throughput continue increasing as the number of lists is further increased? If not, explain why not.
+A) Once the number of lists exceeds the number of threads, it shouldn't help to increase the number of lists. It may increase speed being a few over, but once the number of lists exceeds the number of threads by a significant amount, there will likely be no waiting time for any thread (as there are more locks available than threads that need them).
+
+2.3.4c)
+Q) It seems reasonable to suggest the throughput of an N-way partitioned list should be equivalent to the throughput of a single list with fewer (1/N) threads. Does this appear to be true in the above curves? If not, explain why not.
+A) This does not seem to be true. For example, the throughput of 16 threads and 16 lists is much higher than 1 thread and 1 list. This is because the program can take advantage of multiple cores all running in parallel. This bulk of this program is contained in the critical section, which means that 1 list essentially prohibits the program from taking advantage of multi-threading. With multiple lists, however, we have not shortened the "length" of the critical section, but we have reduced it's danger, as you now only modify (1/L) portion of the list. All other threads are free to modify the other parts in the meantime. This is the ideal goal in multi-threading.

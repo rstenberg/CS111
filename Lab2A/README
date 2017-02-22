@@ -1,0 +1,121 @@
+Name: Ryan Stenberg
+UID: 304-410-501
+Proffessor: Eggert
+TA: Bu
+
+
+
+
+// ********************************* //
+// ************ Contents *********** //
+// ********************************* //
+
+lab2_add.c:
+The lab2_add.c file holds the c source code that tests the effects and dangers of multi-threading with shared variables. The code uses a simple add function to demonstrate these qualities. This program takes the following options:
+	
+	--thread=N    	// Where N is the number of threads to run
+	--iterations=I 	// Where I is the number of iterations each thread should run
+	--yield			// Causes the program to yield after adding to the counter value, but before storing it back in counter
+	--sync=S 		// Where S is the sync argument (m = protected by mutex, s = protected by spin-lock, c = gcc compare and swap)
+
+The output of lab2_add.c is a CSV with elements in the following order:
+	
+	test_name, thread_count, iteration_count, operations_count, nanosecond_run_time, counter
+
+
+README
+The README file contains descriptions of the contents within this directory. It also contains questions and analysis on lab2_add.c, lab2_list.c, and multi-threading in general.
+
+// ********************************* //
+// ********************************* //
+// ********************************* //
+
+
+
+
+
+
+// ************************************************** //
+// ******** Questions and Simulation Results ******** //
+// ************************************************** //
+
+lab2_add program was run with combination of 2,4,8,12 threads and 100,1000,10000,100000 iterations.
+# Threads 	# Iterations where results consistently began to fail
+	2			10,000
+	4 			1,000 (fails ~50%)
+	8			1,000
+	12			1,000
+
+2.1.1)
+Q) Why does it take many iterations before errors are seen?
+A) Raising the quantity of iterations performed by each thread also increases the run time overlap between them. Imagine there is only one iteration. Each thread will complete its operation as the next thread is being created, leaving almost no room for writing/reading the same shared variable simultaneously. When there are 10,000 iterations, however, the program may be able to create all the threads before the 1st thread is able to execute a large portion of its iterations. Now all the threads are reading and writing to a single shared variable and times dependent on each thread's own speed. Take the following sequence: thread 1 reads the value of counter, then thread 2 reads the value, then thread 1 overwrites counter as counter+1, then thread 2 overwrites counter as counter+1. Thread 1's attempt to overwrite counter with counter+1 is useless, as thread 2 then overwrites counter again with the same value. The end result is that thread 1 and 2 both executed an iteration, but counter was only incremented once. 
+
+
+lab2_add program now run with yield option set over the same thread/iteration count combinations as above.
+# Threads 	# Iterations where results consistently began to fail
+	2			10,000
+	4 			1,000 (fails ~95%)
+	8			1,000
+	12			100
+
+2.1.2)
+Q) Why are the --yield runs so much slower? Where is the additional time going? Is it possible to get valid per-operation timings if we are using the --yield option? If so, explain how. If not, explain why not.
+A) Yielding causes the calling thread to give up its permission to the next thread and move to the back of the queue. This means that for every iteration, a thread must sit through an extral cycle of threads before finishing. This takes longer because it increases the overhead time spent switching between threads. It also makes it impossible to get valid per-operation times because even if the time were to be checked before and after the addition, the time difference would encompass a yield in which the thread passed permission off to the next thread. We do not want to take this yield overhead into account while calculating the per-operation time.
+
+
+2.1.3)
+Q) Why does the average cost per operation drop with increasing iterations? If the cost per iteration is a function of the number of iterations, how do we know how many iterations to run(or what the "correct" cost is)?
+A) As the number of iterations increases, the overhead required to switch from thread to thread makes less of an impact. The delta cost of switching threads gets diluted by the cost of the operations. In order to get a more accurate analysis of the "correct" cost per operation, it would be beneficial to move the start time stamp away from the begining of the main function. Instead, it would be better to have each thread request the start time before it's iterations (for loop) run, and then request the end time after it's iterations complete. Doing so would mean that the cost measurement would no longer account for the time to parse the options and create the threads.
+
+
+2.1.4a)
+Q) Why do all of the options perform similarly for low numbers of threads?
+A) A low number of threads reduces the waiting time spent by each thread. This means that the mutex, spin-lock, and CAS will spend a smaller percentage of their time waiting, and then time for operations will overshadow the wait time. Without this wait time overhead, the mutext, spin, and CAS options begin to perform at the same speed as the default (no lock) setting.
+
+2.1.4b)
+Q) Why do the three protected operations slow down as the number of threads rises?
+A) The three protected operations must spend a greater percentage of their time waiting for the locks when the thread count is increased. This makes the cost per operation slow down, as the add operation is being overshadowed by the wait time.
+
+2.1.4c)
+Q) Why are spin-locks so expensive for large numbers of threads?
+A) Spin-locks, unlike mutex, do not schedule another thread while waiting for the unlock to occur. Instead, spin-locks repeatedly try to check the lock status until it eventually allows them to enter. This means that a spin-lock is even more devastated by a high percentage of wait time. And as stated in the previous answer, the wait time increases as the number of threads rises.
+
+
+lab2_list program was run with combination of 2,4,8,12 threads and 10, 100,1000,10000 iterations.
+# Threads 	# Iterations where results began to fail
+	2			10,000 	(fails ~5%)
+	4 			10,000 	(fails ~25%)
+	8			10,000	(fails ~50%)
+	12			10,000	(fails ~90%)
+
+lab2_list program now run with varied yield options set over the same thread counts combined with 1,10,100,1000,10000 iterations.
+# Threads 	yield-opts 		# Iterations where results consistently began to fail
+	2			i			1,000 	(fails ~75%)
+	2			d 			10,000	(fails ~25%)
+	2			il 			1,000	(fails ~75%)
+	2			dl 			10,000	(fails ~25%)
+
+	4 			i 			10		(fails 100%)
+	4			d 			10		(fails 100%)
+	4			il 			10		(fails 100%)
+	4			dl 			10		(fails 100%)
+
+	8			i 			10		(fails 100%)
+	8			d 			10		(fails 100%)
+	8			il 			10		(fails 100%)
+	8			dl 			10		(fails 100%)
+
+	12			i 			10		(fails 100%)
+	12			d 			10		(fails 100%)
+	12			il 			10		(fails 100%)
+	12			dl  		1		(fails 100%)
+
+2.2.1)
+Q) Compare the variation in time per protected operation vs the number of threads (for mutex-protected operations) in Part-1 and Part-2, commenting on similarities/differences and offering explanations for them.
+A) The cost per protected operations against thread count trends are similar for the mutex-locked operations in both part-1 and part-2. This makes sense. Even though the operations may take different times, the cost per operation should grow at the same (relatively linear) rate as the number of threads increases. A linear model is not perfect, however, because as the number of threads increases, even though there are more threads waiting for the lock, the mutex takes advantage of sleeping during wait periods. In Part-1, the for loop in each thread is outside of the critical section, allowing each thread to handle its for loop increments while another thread is in the critical section. This efficiency does not exist in Part-2, as the critical section must block off all the adds, length counts, and deletes for one thread. Therefore Part-1 actually has a slightly better than linear increase in average cost, whereas Part-2 has a linear representation.
+
+
+2.2.2)
+Q) Compare the variation in time per protected operation vs the number of threads for Mutex vs Spin locks, commenting on similarities/differences and offering explanations for them.
+A) Mutex locks and spin locks retain a relatively linear increase in time per protected operation as the number of threads increases. Increasing from 1 to 16 threads increases the time that these two runs take by approximately 16x. Spin-locks work by continually checking the lock until the thread is able to enter the protected code. A mutex lock, on the other hand, will sleep and allow another thread to run while it waits for the lock to be open. The mutex lock performs slightly better as the number of threads increases. This is likely do to the fact that a maximum number of threads are being productive with the mutex lock sync option. A thread will go to sleep if the mutex lock is locked when the thread arrives at the critical section.
+

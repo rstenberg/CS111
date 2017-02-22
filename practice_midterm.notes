@@ -1,0 +1,73 @@
+1.  No, system calls require a trap in order to catch an otherwise not-allowed action (e.g. read/write). 
+	If traps did not exist, a system call would either: 1) skip over the system call and never execute it or 2) 
+	the user would be allowed to access privileged portions of memory. For example, if priviliged memory like memory 
+	location 0x00000 were written to, and there was no trap to catch it, the program would simply fail. If a system 
+	call was made like "read", it would simply be skipped over and then program would then attempt to handle the 
+	data that was not read in. This would rarely produce the desired results.
+
+2.  First "cat <mouse" will attempt to write the "mouse" file to the write end of the first pipe. Then this will be 
+	read from the read end of the first pipe and passed as an input to the second cat command. This command will 
+	attempt to write to the write end of the second pipe. Next, the final cat command will read from the read end 
+	of the final pipe and write to the specified output ">dog". The dog file will end up with the contents of cat 
+	written to it.
+
+3.  Getpid reads the pid of the process from protected memory. This is done so that a process cannot change its own 
+	pid (which could cause other syscalls to attempt to interact with it in undesirable ways). If the pid of a process 
+	is only access through syscalls, then we do not need to worry about a process attempting to change its pid.
+
+4a. This ensures that programs which write relatively low amount of bytes to a file are insured to have their data written 
+	atomically (all in one uninterrupted segment). If a cat program is writing 4000 bytes over to a file on a linux server, 
+	and another cat program attempts to write 2 bytes in the very middle of this, the 2 bytes could potentially corrupt the 
+	usefullness of the output file. This would allow programs to mess with other write operations. Now users are ensure that 
+	writes under 4096 bytes (on linux) will be uninterrupted. 
+
+4b. One program that tries to write a large large amount of bytes to a file could effectively monoploize the file and other 
+	programs would not have an opportunity to write there.
+
+4c. Because multiple processes were running at the same time, lab 1B did rely on this requirement. Each process shares file 
+	descriptors at the point of forking, so it was possible for multiple processes to be writing to the same file simultaneously. 
+	If the input files were over 4096 bytes, however, then it didn't matter.
+
+5.  Asking users to only use the "write" syscall is a less direct and intuitive way to communicate to a process that it 
+	should terminate. This would also require the other process to read the file that was written to. Because the process 
+	is not notified when an addition to this file is made, it would have to constantly poll for a "kill" command written 
+	to this file. Then even after reading this file and recognizing the incomming "kill" request, it would be the kernel's 
+	job to kill the process. This means that the process would then have to make another syscall to notify the kernel that 
+	it should terminate. Therefore it makes no sense to use "write" as a kill command.
+
+6.  Depends. A preemptive scheduler is defined as a scheduler that interrupts processes before they are done in order to 
+	pass off the CPU. If the SJF scheduler uses this preemptive scheduling technique to pass off the CPU while waiting for 
+	a job to receive a return value (with the intention giving it the CPU back as soon as possible) then it would speed up 
+	the overall process. This would essentially prioritize shortest jobs, but not REQUIRE that they finish first. However, 
+	if a SJF scheduler randomly passed off scheduled time, then the scheduler would not longer be considered SJF.
+
+7.  One would-be reader could be starved forever in a mutex. After attempting and failing to lock the mutex, the scheduler 
+	will pass off the CPU to a different process. When the aforementioned process reacquires scheduled time it will attempt again, 
+	but there is no guarantee that another process will not have locked the mutex by now.
+
+8a. If the current registers are not set, then the kernel can never check what the state of the child process is. In fact it 
+	will get random undesired values.
+
+8b. If line 10 were ommitted then wait would not report an error if the number of processes drops below 0.
+
+8c. If line 11 were ommitted then wait would not report an error if the process is its own child.
+
+8d. If line 12 were ommitted then wait would not report an error if the child processes state is empty.
+
+8e. If line 16 were ommitted then wait would not return the pid of the child when detecting that it has entereted the zombie state.
+	This would then loop forever or until an error was triggered.
+
+8f. If lines 19 and 20 were both ommitted then the interrupt would simply do a single check on the child process, and would not wait
+	for its state to be caught as zombie. 
+
+8g. If line 21 were replace with "break;" then it would produce a similar result as (8f). This would cause the wait syscall to not 
+	re-schedule for another process after attempting a single check on the status of the child process. If the child process was 
+	not in zombie state upon checking it the first time, then wait will not re-check. 
+
+9a. Must declare "struct large_object buf[N]" to allocate memory for an array of large_objects. in w_mod_N assignment, p->w++ % N 
+	should be (p->w)++ % N. While (p->w - p->r == N) continue; will be an infinite loop. It is probably meant to increment w by 1.
+
+9b. The mutex lock prevents writing to different elements in the buf array of the pipe. We would preferably only lock threads out 
+	from writing to a pipe that is already being written to. In reality this will be writing to each large_object element in the 
+	buf array, and it does not make sense to mutex lock the writes to large objects as the same one should not be accessed more 
+	that once
